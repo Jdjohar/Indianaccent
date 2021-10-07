@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "419512938057",
+    "project_id": "indianaccent-5536c",
+    "storage_bucket": "indianaccent-5536c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419512938057:android:c66c28df07831b67259998",
+        "android_client_info": {
+          "package_name": "com.indianaccent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419512938057-jvjab3r85lfu13ad98ei3p02gbdkt5b1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDI99r2Cj9Hneof5jc5q9s-BH-kr98oAY8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419512938057-jvjab3r85lfu13ad98ei3p02gbdkt5b1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.johnsonsu.rnsoundplayer.RNSoundPlayerPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import com.johnsonsu.rnsoundplayer.RNSoundPlayerPackage;
@@ -35,6 +36,7 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // new MainReactPackage(),
+            // new RNSoundPlayerPackage(),
             // new AsyncStoragePackage(),
             // new SplashScreenReactPackage(),
           // new RNPrintPackage(),

@@ -9,10 +9,14 @@ import {
   FlatList,
   Modal,
   ScrollView,
+  SafeAreaView,
   Alert,
 } from 'react-native';
 import {Card, Button, FAB} from 'react-native-paper';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StarPRNT } from 'react-native-print-star';
+
 
 // const [selectedPrinter,setselectedPrinter] =useState('');
 // import { Audio } from 'expo-av';
@@ -25,7 +29,9 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 //   }
 
 const OrderList = ({route}) => {
+
   const [wdata, setwData] = useState('');
+  const [wdataall, setwDataall] = useState('');
   const [totalamount, settotalamount] = useState('');
   const [total_tax, settotal_tax] = useState('');
   const [abcd, setabcd] = useState(false);
@@ -41,149 +47,25 @@ const OrderList = ({route}) => {
   const [changecolor35, setchangecolor35] = useState('#006aff');
   const [changecolor40, setchangecolor40] = useState('#006aff');
   const [isSubmit, setIsSubmit] = useState(true);
+  const [errorname, seterrorname] = useState('');
+  const [printersarr, setprintersarr] = useState([]);
+  const [lineitems, setlineitems] = useState([]);
+  const [feeitem, setfeeitem] = useState('');
+  const [billing, setbilling] = useState('');
   const OrderIDfromHome = route.params.orderID;
+  console.log(OrderIDfromHome);
 
   useEffect(() => {
     fetchorder();
+    return () => {
+      // This is its cleanup.
+    };
   }, []);
 
-  const printHTML = async () => {
-    await RNPrint.print({
-      html: `
 
-      <style>
-      #invoice-POS{
-        box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
-        padding:2mm;
-        margin: 0 auto;
-        width: 44mm;
-        background: #FFF;
-        
-        
-      ::selection {background: #f31544; color: #FFF;}
-      ::moz-selection {background: #f31544; color: #FFF;}
-      h1{
-        font-size: 1.5em;
-        color: #222;
-      }
-      h2{font-size: .9em;}
-      h3{
-        font-size: 1.2em;
-        font-weight: 300;
-        line-height: 2em;
-      }
-      p{
-        font-size: .7em;
-        color: #666;
-        line-height: 1.2em;
-      }
-       
-      #top, #mid,#bot{ /* Targets all id with 'col-' */
-        border-bottom: 1px solid #EEE;
-      }
-      
-      #top{min-height: 100px;}
-      #mid{min-height: 80px;} 
-      #bot{ min-height: 50px;}
-      
-      #top .logo{
-        //float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-        background-size: 60px 60px;
-      }
-      .clientlogo{
-        float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-        background-size: 60px 60px;
-        border-radius: 50px;
-      }
-      .info{
-        display: block;
-        //float:left;
-        margin-left: 0;
-      }
-      .title{
-        float: right;
-      }
-      .title p{text-align: right;} 
-      table{
-        width: 100%;
-        border-collapse: collapse;
-      }
-      td{
-        //padding: 5px 0 5px 15px;
-        //border: 1px solid #EEE
-      }
-      .tabletitle{
-        //padding: 5px;
-        font-size: .5em;
-        background: #EEE;
-      }
-      .service{border-bottom: 1px solid #EEE;}
-      .item{width: 24mm;}
-      .itemtext{font-size: .5em;}
-      
-      #legalcopy{
-        margin-top: 5mm;
-      }
-      }</style>
-      
-      <div id="invoice-POS">
-        
-        <center id="top">
-          <div class="logo"></div>
-          <div class="info"> 
-            <h2></h2>
-          </div><!--End Info-->
-        </center><!--End InvoiceTop-->
-        
-       
-        
-        <div id="bot">
-    
-              <div id="table">
-                <table>
-                  
-    
-                  ${lineitems[0].map(function (k) {
-                    return `
-                    <tr class="service">
-                    <td class="tableitem"><p class="itemtext">${k.quantity} ${k.name}</p></td>
-                    <td class="tableitem"><p class="itemtext"></p></td>
-                  </tr>`;
-                  })}
-                  
-    
-                </table>
-                <p>------------------------------------</p>
-                <p>Server Admin</p>
-                <p> ${currentDateTime}</p>
-              </div><!--End Table-->
-    
-              <div id="legalcopy">
-                
-              </div>
-    
-            </div><!--End InvoiceBot-->
-      </div><!--End Invoice-->  
-    `,
-    });
-  };
 
-  const Stopsoundabc = async () => {
-    try {
-      SoundPlayer.stop('abc', 'ogg');
-    } catch (e) {
-      alert('Cannot play the file');
-      console.log('cannot play the song file', e);
-    }
-  };
   const closepop = async () => {
-    Stopsoundabc();
+    //Stopsoundabc();
     setModal(false);
   };
 
@@ -258,6 +140,31 @@ const OrderList = ({route}) => {
     setordertime(id);
   };
 
+  const datupdate = (dataeupdatev) => {
+    var t = new Date(dataeupdatev);
+    var hours = t.getHours();
+    var minutes = t.getMinutes();
+    var newformat = t.getHours() >= 12 ? 'PM' : 'AM';  
+    
+    // Find current hour in AM-PM Format 
+    hours = hours % 12;  
+    
+    // To display "0" as "12" 
+    hours = hours ? hours : 12;  
+    minutes = minutes < 10 ? '0' + minutes : minutes; 
+    var formatted = 
+        (t.toString().split(' ')[0]) 
+        + ', ' +('0' + t.getDate()).slice(-2) 
+        + '/' + ('0' + (t.getMonth() + 1) ).slice(-2)
+        + '/' + (t.getFullYear())
+        + ' - ' + ('0' + t.getHours()).slice(-2)
+        + ':' + ('0' + t.getMinutes()).slice(-2)
+        + ' ' + newformat;
+
+        return formatted;
+
+  }
+
   const addnote = async () => {
     setIsSubmit(true);
     console.log('addnote start');
@@ -288,14 +195,98 @@ const OrderList = ({route}) => {
       });
   };
 
+
+  // printer conection
+
+  async function connect(port) {
+    console.log(port, "Port")
+    try {
+      var connect = await StarPRNT.connect(port, "StarGraphic", false);
+      console.log(connect, "printer"); // Printer Connected!
+       seterrorname(connect);
+      //  Alert.alert(connect);
+       if (connect == "Printer Connected"){
+         console.log("if part runing")
+        testprint(port);
+       } else {
+        await AsyncStorage.removeItem('printerportncumber');
+       }
+ 
+    } catch (e) {
+      // var gh = JSON.stringify(e.message);
+      console.error(JSON.stringify(e.message), "abcddk");
+      Alert.alert(JSON.stringify(e.message));
+      // seterrorname(JSON.stringify(e.message));
+    }
+  }
+
+  async function testprint(port) {
+
+    // console.log("commands startt.....");
+  
+      const orderdt = wdataall;
+      const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;
+      const orderdatetime =datupdate(orderdt.date_created) ;
+      const customer_note = orderdt.customer_note;
+    let commands = [];
+  commands.push({append:
+          "ONLINE ORDER\n" +
+          customername +
+          "\n", fontSize: 40} );
+  commands.push({append:
+          orderdatetime + 
+          "\n", fontSize: 25} );
+  commands.push({append:
+    customer_note + "\n" +
+          "\n", fontSize: 25} );
+  
+  
+        {lineitems.map(function (k) {
+      commands.push({append:"" + k.quantity  + " x " + k.name + "" + "\n", fontSize: 40})
+    })}  
+    commands.push({appendCutPaper:StarPRNT.CutPaperAction.PartialCutWithFeed});
+          console.log(commands, "Printing Command Press +++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    
+    try {
+      var printResult = await StarPRNT.print("StarGraphic", commands, port);
+      console.log(printResult, "p326r2+62+62+3030+6+62+96+6"); // Success!
+      Alert.alert( "Print",JSON.stringify(printResult));
+    } catch (e) {
+      console.error(JSON.stringify(e));
+      Alert.alert("Message",JSON.stringify(e.message));
+    }
+    }
+  
+
+
   // Update the order status
-  const OrderUpdate = async () => {
-    setIsSubmit(true);
-    const orderstatus = {
-      status: 'completed',
+  const OrderUpdate = async (orderstatusupdate) => {
+    setModal(false);
+    setIsSubmit(false);
+var orderstatus = {
+  status: orderstatusupdate,
+};
+
+    if (orderstatusupdate == "completed") {
+      const note = wdataall.customer_note;
+      orderstatus = {
+        status: orderstatusupdate,
+        customer_note: note + ` Your Order will Prepair within ${ordertime} minutes`,
+      };
+    }else {
+    orderstatus = {
+      status: orderstatusupdate,
     };
-    printHTML();
-    Stopsoundabc();
+    }
+    
+
+    if (orderstatusupdate == "completed") {
+      var getprinterport = await AsyncStorage.getItem('printerportncumber');
+      connect(getprinterport);
+      console.log(getprinterport,"print port async", OrderIDfromHome)
+    }
+   // Stopsoundabc();
+    
     fetch(
       `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
       // `https://jdwebservices.com/aman/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073`,
@@ -310,16 +301,19 @@ const OrderList = ({route}) => {
       .then(response => response.json())
       .then(data => {
         setIsSubmit(false);
-        addnote();
-        console.log('Success:', data);
+        Alert.alert("Order Status:" , orderstatusupdate)
+        // if (orderstatusupdate == "completed") {
+        //   addnote();
+        // }
+
       })
       .catch(error => {
         console.error('Error:', error);
- 
+        setModal(false);
       });
   };
 
-
+  
 
   const fetchorder = async () => {
     try {
@@ -331,16 +325,30 @@ const OrderList = ({route}) => {
       );
       // let items = await fetch(`https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`);
       var json = await items.json();
-      //   console.log(json, "hello");
+        // console.log(json, "hello");
       //   console.log(json.total, "total amount");
       const totalamountorder = json.total;
+      const customername = json.customer_note;
+      console.log(customername, " customername ++++++++++++++++++++++")
       const woototal_tax = json.total_tax;
       const wooproductstatus = json.status;
+      const woolineitem = json.line_items;
+      const woofeeitem = json.fee_lines.length > 0 ? json.fee_lines[0].total : 0 ;
+      // const woofeeitem = json.fee_lines[0].total;
+
+      
+      const woobilling = json.billing;
+
+      console.log(woofeeitem, " woofeeitemlength")
 
       setproductstatus(wooproductstatus);
+      setlineitems(woolineitem);
+      setfeeitem(woofeeitem);
+      setbilling(woobilling);
       settotal_tax(woototal_tax);
       settotalamount(totalamountorder);
       setwData([json.line_items]);
+      setwDataall(json);
       setIsSubmit(false);
       if(wooproductstatus == "completed") {
         setdate_created_gmt('Accepted');
@@ -357,6 +365,10 @@ const OrderList = ({route}) => {
     }
   };
 
+
+
+
+
   const renderList = ((item)=>{
     // console.log(item.item, "item")
     return(
@@ -364,17 +376,17 @@ const OrderList = ({route}) => {
             
         <View style={styles.box}>
             <View style={styles.inner}>
-                <Text>{item.name} X {item.quantity}</Text>
+                <Text style={{textAlign:'center'}}>{item.name} X {item.quantity}</Text>
             </View>
        </View> 
           
                     <View style={styles.box}>
                       <View style={styles.inner}>
-                        <Text>${item.subtotal}</Text>
+                        <Text style={{textAlign:'center'}}>${item.subtotal}</Text>
                         </View>
     
 </View> 
-<View style={{paddingLeft: 9}}><Text>--------------------------------------------------</Text></View>
+<View style={{paddingLeft: 50}}><Text style={{textAlign:'center'}}>--------------------------------------------------</Text></View>
 </View>  
       
     )
@@ -386,57 +398,81 @@ const OrderList = ({route}) => {
     <ActivityIndicator size="large" color="#602bc2" />
  </View>
  :
+ <ScrollView>
     <View style={styles.container}>
       {/* <Button onPress={() => printHTML()} title="Print HTML" /> */}
-      <View style={styles.box1}>
-        <Text>Your Orders</Text>
-      </View>
+
+      <View style={styles.box3}>
+          <View style={styles.inner} />
+          <Text style={{fontSize:15, paddingBottom:10}}>Customer Information</Text>
+          <Text>Full Name: {billing.first_name } {billing.last_name}</Text>
+          <Text>Email: {billing.email }</Text>
+          <Text>Phone: {billing.phone }</Text>
+        </View>
 
       <View style={styles.container_home2}>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text style={{fontWeight: 'bold' }}>Products {abcd}</Text>
+            <Text style={{fontWeight: 'bold',textAlign:'center' }}>Products </Text>
           </View>
         </View>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text style={{fontWeight: 'bold' }}>Amount</Text>
+            <Text style={{fontWeight: 'bold', textAlign:'center' }}>Amount</Text>
           </View>
         </View>
       
       </View>
-
+      <View>
       <FlatList
         data={wdata[0]}
+        nestedScrollEnabled
         renderItem={item => {
           // console.log(item.item,"ITEMS");
           return renderList(item.item);
         }}
         keyExtractor={item => `${item.id}`}
       />
-
+     </View>
+<View style={{backgroundColor:'#222', height:2, marginTop:15}}>
+              </View>
       <View style={styles.container_home2}>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text>Tax</Text>
+            <Text style={{textAlign:'center'}}>Tax</Text>
           </View>
         </View>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text>${total_tax}</Text>
+            <Text style={{textAlign:'center'}}>${total_tax}</Text>
           </View>
         </View>
       </View>
-
       <View style={styles.container_home2}>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text>Amount Total</Text>
+            <Text style={{textAlign:'center'}}>Tip</Text>
           </View>
         </View>
         <View style={styles.box2}>
           <View style={styles.inner}>
-            <Text>${totalamount}</Text>
+            <Text style={{textAlign:'center'}}>      
+            ${feeitem}
+            </Text>
+          </View>
+        </View>
+      </View>
+      
+
+      <View style={styles.container_home2}>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{textAlign:'center'}}>Amount Total</Text>
+          </View>
+        </View>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{textAlign:'center'}}>${totalamount}</Text>
           </View>
         </View>
         <View style={styles.box}>
@@ -446,16 +482,23 @@ const OrderList = ({route}) => {
 
 
       <View style={styles.container_home2}>
-        <View style={styles.box2}>
+        <View style={styles.box3}>
           <View style={styles.inner}>
             {/* <Text>{productstatus}</Text> */}
-            <Button mode="contained" onPress={() => setModal(true)} >Edit Order</Button>
-          </View>
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+          {
+            productstatus == "completed" || productstatus == "cancelled"
+            ? 
+            <Text>Order Status: {productstatus}</Text> 
+            :
+            <Button mode="contained"  onPress={() => setModal(true)} >Edit Order</Button>
+          }
+           
+            </View>
+                    </View>
         </View>
        
-        <View style={styles.box}>
-          <View style={styles.inner} />
-        </View>
+       
       </View>
       
       <Modal
@@ -496,12 +539,16 @@ const OrderList = ({route}) => {
             <Button
        
               mode="contained"
-              onPress={() => OrderUpdate()}>
+              onPress={() => 
+              
+                ordertime == '' ? Alert.alert("Please Select Order Preparing Time") :
+
+              OrderUpdate('completed')}>
               Accept
             </Button>
             <Button
-              mode="contained                                    "
-              onPress={() => closepop()}>
+              mode="contained"
+              onPress={() => OrderUpdate('cancelled')}>
               Reject
             </Button>
           </View>
@@ -511,7 +558,7 @@ const OrderList = ({route}) => {
 
       
       </View>
-
+ </ScrollView>
   );
 };
 
@@ -519,7 +566,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 5,
     width: '100%',
-    height: '100%',
+    height: 'auto',
     backgroundColor: '#eee',
 
   },
@@ -533,6 +580,7 @@ const styles = StyleSheet.create({
   container_home2: {
     padding: 5,
     width: '100%',
+    height:'auto',
     backgroundColor: '#eee',
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -546,6 +594,11 @@ const styles = StyleSheet.create({
   box2: {
     padding: 5,
     width: '50%',
+    height: 50,
+  },
+   box3: {
+    padding: 5,
+    width: '100%',
     height: 50,
   },
   box1: {

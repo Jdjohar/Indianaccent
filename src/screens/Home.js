@@ -24,7 +24,7 @@ import { StarPRNT } from 'react-native-print-star';
 
 const Home = props => {
   const [wdata, setwData] = useState('');
-  const [lineitems, setlineitems] = useState('');
+  const [lineitems, setlineitems] = useState([]);
   const [orderID, setOrderID] = useState('');
   const [orderIDreal, setOrderIDreal] = useState('');
   const [modal, setModal] = useState(false);
@@ -40,6 +40,7 @@ const Home = props => {
   const [pressed, setpressed] = useState(false);
   const [errorname, seterrorname] = useState('12');
   const [printersarr, setprintersarr] = useState([]);
+  const [printerportasync, setprinterportasync] = useState('');
   const [currentDateTime, setcurrentDateTime] = useState(new Date());
   const [sd, setsd] = useState('ABC Test');
 
@@ -47,11 +48,17 @@ const Home = props => {
     let isMounted = true;
     //  fetchorder function fetch new orders and play a sound when new order arrived
     const fetchorder = async () => {
+      var getprinterport = await AsyncStorage.getItem('printerportncumber');
+      if(getprinterport != null || getprinterport != ''){
+        setprinterportasync(getprinterport);
+      }else {
+      setprinterportasync("Not Connected");
+      }
       console.log('fetch process start');
       try {
         let items = await fetch(
           // 'https://jdwebservices.com/aman/wp-json/wc/v3/orders?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073',
-          'https://indianaccentyyc.ca/wp-json/wc/v3/orders?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5'
+          'https://indianaccentyyc.ca/wp-json/wc/v3/orders?per_page=20&consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5'
         );
         var json = await items.json();
         //   console.log(json, "hello");
@@ -83,25 +90,52 @@ const Home = props => {
     };
 
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      playsoundabc();
-      Alert.alert(
-        'A new FCM message arrived!',
-        JSON.stringify(remoteMessage.notification.body),
-      );
+     // playsoundabc();
+     
     });
     SplashScreen.hide();
     // set interval refresh the app every 10 seconds
     setInterval(() => {
-      // fetchorder();
-      // logictoplaysound();
+      fetchorder();
+      logictoplaysound();//
     }, 5000);
     return unsubscribe;
   }, []);
 
+
+  const datupdate = (dataeupdatev) => {
+    var t = new Date(dataeupdatev);
+    var hours = t.getHours();
+    var minutes = t.getMinutes();
+    var newformat = t.getHours() >= 12 ? 'PM' : 'AM';  
+    
+    // Find current hour in AM-PM Format 
+    hours = hours % 12;  
+    
+    // To display "0" as "12" 
+    hours = hours ? hours : 12;  
+    minutes = minutes < 10 ? '0' + minutes : minutes; 
+    var formatted = 
+        (t.toString().split(' ')[0]) 
+        + ', ' +('0' + t.getDate()).slice(-2) 
+        + '/' + ('0' + (t.getMonth() + 1) ).slice(-2)
+        + '/' + (t.getFullYear())
+        + ' - ' + ('0' + t.getHours()).slice(-2)
+        + ':' + ('0' + t.getMinutes()).slice(-2)
+        + ' ' + newformat;
+
+        return formatted;
+
+  }
   // play sound
   const playsoundabc = async () => {
+    console.log("sound Start")
     try {
-      SoundPlayer.playSoundFile('abc', 'ogg');
+      console.log("sound Start 2")
+      SoundPlayer.loadSoundFile('order', 'mp3');
+      console.log("sound Start3")
+      SoundPlayer.playSoundFile('order', 'mp3');
+      console.log("sound Start4")
     } catch (e) {
       alert('Cannot play the file');
       console.log('cannot play the song file', e);
@@ -111,7 +145,7 @@ const Home = props => {
   //Stop the Sound
   const Stopsoundabc = async () => {
     try {
-      SoundPlayer.stop('abc', 'ogg');
+      SoundPlayer.stop('order', 'mp3');
     } catch (e) {
       alert('Cannot play the file');
       console.log('cannot play the song file', e);
@@ -124,256 +158,256 @@ const Home = props => {
     setModal(false);
   };
 
-  const printHTML = async () => {
-    await RNPrint.print({
-      html: `
+  // const printHTML = async () => {
+  //   await RNPrint.print({
+  //     html: `
 
-      <style>
-      #invoice-POS{
-        box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
-        padding:2mm;
-        margin: 0 auto;
-        width: 44mm;
-        background: #FFF;
+  //     <style>
+  //     #invoice-POS{
+  //       box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+  //       padding:2mm;
+  //       margin: 0 auto;
+  //       width: 44mm;
+  //       background: #FFF;
         
         
-      ::selection {background: #f31544; color: #FFF;}
-      ::moz-selection {background: #f31544; color: #FFF;}
-      h1{
-        font-size: 1.5em;
-        color: #222;
-      }
-      h2{font-size: .9em;}
-      h3{
-        font-size: 1.2em;
-        font-weight: 300;
-        line-height: 2em;
-      }
-      p{
-        font-size: .7em;
-        color: #666;
-        line-height: 1.2em;
-      }
+  //     ::selection {background: #f31544; color: #FFF;}
+  //     ::moz-selection {background: #f31544; color: #FFF;}
+  //     h1{
+  //       font-size: 1.5em;
+  //       color: #222;
+  //     }
+  //     h2{font-size: .9em;}
+  //     h3{
+  //       font-size: 1.2em;
+  //       font-weight: 300;
+  //       line-height: 2em;
+  //     }
+  //     p{
+  //       font-size: .7em;
+  //       color: #666;
+  //       line-height: 1.2em;
+  //     }
        
-      #top, #mid,#bot{ /* Targets all id with 'col-' */
-        border-bottom: 1px solid #EEE;
-      }
+  //     #top, #mid,#bot{ /* Targets all id with 'col-' */
+  //       border-bottom: 1px solid #EEE;
+  //     }
       
-      #top{min-height: 100px;}
-      #mid{min-height: 80px;} 
-      #bot{ min-height: 50px;}
+  //     #top{min-height: 100px;}
+  //     #mid{min-height: 80px;} 
+  //     #bot{ min-height: 50px;}
       
-      #top .logo{
-        //float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-        background-size: 60px 60px;
-      }
-      .clientlogo{
-        float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-        background-size: 60px 60px;
-        border-radius: 50px;
-      }
-      .info{
-        display: block;
-        //float:left;
-        margin-left: 0;
-      }
-      .title{
-        float: right;
-      }
-      .title p{text-align: right;} 
-      table{
-        width: 100%;
-        border-collapse: collapse;
-      }
-      td{
-        //padding: 5px 0 5px 15px;
-        //border: 1px solid #EEE
-      }
-      .tabletitle{
-        //padding: 5px;
-        font-size: .5em;
-        background: #EEE;
-      }
-      .service{border-bottom: 1px solid #EEE;}
-      .item{width: 24mm;}
-      .itemtext{font-size: .5em;}
+  //     #top .logo{
+  //       //float: left;
+  //       height: 60px;
+  //       width: 60px;
+  //       background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
+  //       background-size: 60px 60px;
+  //     }
+  //     .clientlogo{
+  //       float: left;
+  //       height: 60px;
+  //       width: 60px;
+  //       background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
+  //       background-size: 60px 60px;
+  //       border-radius: 50px;
+  //     }
+  //     .info{
+  //       display: block;
+  //       //float:left;
+  //       margin-left: 0;
+  //     }
+  //     .title{
+  //       float: right;
+  //     }
+  //     .title p{text-align: right;} 
+  //     table{
+  //       width: 100%;
+  //       border-collapse: collapse;
+  //     }
+  //     td{
+  //       //padding: 5px 0 5px 15px;
+  //       //border: 1px solid #EEE
+  //     }
+  //     .tabletitle{
+  //       //padding: 5px;
+  //       font-size: .5em;
+  //       background: #EEE;
+  //     }
+  //     .service{border-bottom: 1px solid #EEE;}
+  //     .item{width: 24mm;}
+  //     .itemtext{font-size: .5em;}
       
-      #legalcopy{
-        margin-top: 5mm;
-      }
-      }</style>
+  //     #legalcopy{
+  //       margin-top: 5mm;
+  //     }
+  //     }</style>
       
-      <div id="invoice-POS">
+  //     <div id="invoice-POS">
         
-        <center id="top">
-          <div class="logo"></div>
-          <div class="info"> 
-            <h2></h2>
-          </div><!--End Info-->
-        </center><!--End InvoiceTop-->
+  //       <center id="top">
+  //         <div class="logo"></div>
+  //         <div class="info"> 
+  //           <h2></h2>
+  //         </div><!--End Info-->
+  //       </center><!--End InvoiceTop-->
         
        
         
-        <div id="bot">
+  //       <div id="bot">
     
-              <div id="table">
-                <table>
+  //             <div id="table">
+  //               <table>
                   
     
-                  ${lineitems[0].map(function (k) {
-                    return `
-                    <tr class="service">
-                    <td class="tableitem"><p class="itemtext">${k.quantity} ${k.name}</p></td>
-                    <td class="tableitem"><p class="itemtext"></p></td>
-                  </tr>`;
-                  })}
+  //                 ${lineitems[0].map(function (k) {
+  //                   return `
+  //                   <tr class="service">
+  //                   <td class="tableitem"><p class="itemtext">${k.quantity} ${k.name}</p></td>
+  //                   <td class="tableitem"><p class="itemtext"></p></td>
+  //                 </tr>`;
+  //                 })}
                   
     
-                </table>
-                <p>------------------------------------</p>
-                <p>Server Admin</p>
-                <p> ${currentDateTime}</p>
-              </div><!--End Table-->
+  //               </table>
+  //               <p>------------------------------------</p>
+  //               <p>Server Admin</p>
+  //               <p> ${currentDateTime}</p>
+  //             </div><!--End Table-->
     
-              <div id="legalcopy">
+  //             <div id="legalcopy">
                 
-              </div>
+  //             </div>
     
-            </div><!--End InvoiceBot-->
-      </div><!--End Invoice-->  
-    `,
-    });
-  };
+  //           </div><!--End InvoiceBot-->
+  //     </div><!--End Invoice-->  
+  //   `,
+  //   });
+  // };
 
-  const printHTMLtest = async () => {
-    await RNPrint.print({
-      html: `
+  // const printHTMLtest = async () => {
+  //   await RNPrint.print({
+  //     html: `
 
-      <style>
-      #invoice-POS{
-        box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
-        padding:2mm;
-        margin: 0 auto;
-        width: 44mm;
-        background: #FFF;
+  //     <style>
+  //     #invoice-POS{
+  //       box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+  //       padding:2mm;
+  //       margin: 0 auto;
+  //       width: 44mm;
+  //       background: #FFF;
         
         
-      ::selection {background: #f31544; color: #FFF;}
-      ::moz-selection {background: #f31544; color: #FFF;}
-      h1{
-        font-size: 1.5em;
-        color: #222;
-      }
-      h2{font-size: .9em;}
-      h3{
-        font-size: 1.2em;
-        font-weight: 300;
-        line-height: 2em;
-      }
-      p{
-        font-size: .7em;
-        color: #666;
-        line-height: 1.2em;
-      }
+  //     ::selection {background: #f31544; color: #FFF;}
+  //     ::moz-selection {background: #f31544; color: #FFF;}
+  //     h1{
+  //       font-size: 1.5em;
+  //       color: #222;
+  //     }
+  //     h2{font-size: .9em;}
+  //     h3{
+  //       font-size: 1.2em;
+  //       font-weight: 300;
+  //       line-height: 2em;
+  //     }
+  //     p{
+  //       font-size: .7em;
+  //       color: #666;
+  //       line-height: 1.2em;
+  //     }
        
-      #top, #mid,#bot{ /* Targets all id with 'col-' */
-        border-bottom: 1px solid #EEE;
-      }
+  //     #top, #mid,#bot{ /* Targets all id with 'col-' */
+  //       border-bottom: 1px solid #EEE;
+  //     }
       
-      #top{min-height: 100px;}
-      #mid{min-height: 80px;} 
-      #bot{ min-height: 50px;}
+  //     #top{min-height: 100px;}
+  //     #mid{min-height: 80px;} 
+  //     #bot{ min-height: 50px;}
       
-      #top .logo{
-        //float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-        background-size: 60px 60px;
-      }
-      .clientlogo{
-        float: left;
-        height: 60px;
-        width: 60px;
-        background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-        background-size: 60px 60px;
-        border-radius: 50px;
-      }
-      .info{
-        display: block;
-        //float:left;
-        margin-left: 0;
-      }
-      .title{
-        float: right;
-      }
-      .title p{text-align: right;} 
-      table{
-        width: 100%;
-        border-collapse: collapse;
-      }
-      td{
-        //padding: 5px 0 5px 15px;
-        //border: 1px solid #EEE
-      }
-      .tabletitle{
-        //padding: 5px;
-        font-size: .5em;
-        background: #EEE;
-      }
-      .service{border-bottom: 1px solid #EEE;}
-      .item{width: 24mm;}
-      .itemtext{font-size: .5em;}
+  //     #top .logo{
+  //       //float: left;
+  //       height: 60px;
+  //       width: 60px;
+  //       background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
+  //       background-size: 60px 60px;
+  //     }
+  //     .clientlogo{
+  //       float: left;
+  //       height: 60px;
+  //       width: 60px;
+  //       background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
+  //       background-size: 60px 60px;
+  //       border-radius: 50px;
+  //     }
+  //     .info{
+  //       display: block;
+  //       //float:left;
+  //       margin-left: 0;
+  //     }
+  //     .title{
+  //       float: right;
+  //     }
+  //     .title p{text-align: right;} 
+  //     table{
+  //       width: 100%;
+  //       border-collapse: collapse;
+  //     }
+  //     td{
+  //       //padding: 5px 0 5px 15px;
+  //       //border: 1px solid #EEE
+  //     }
+  //     .tabletitle{
+  //       //padding: 5px;
+  //       font-size: .5em;
+  //       background: #EEE;
+  //     }
+  //     .service{border-bottom: 1px solid #EEE;}
+  //     .item{width: 24mm;}
+  //     .itemtext{font-size: .5em;}
       
-      #legalcopy{
-        margin-top: 5mm;
-      }
-      }</style>
+  //     #legalcopy{
+  //       margin-top: 5mm;
+  //     }
+  //     }</style>
       
-      <div id="invoice-POS">
+  //     <div id="invoice-POS">
         
-        <center id="top">
-          <div class="logo"></div>
-          <div class="info"> 
-            <h2></h2>
-          </div><!--End Info-->
-        </center><!--End InvoiceTop-->
+  //       <center id="top">
+  //         <div class="logo"></div>
+  //         <div class="info"> 
+  //           <h2></h2>
+  //         </div><!--End Info-->
+  //       </center><!--End InvoiceTop-->
         
        
         
-        <div id="bot">
+  //       <div id="bot">
     
-              <div id="table">
-                <table>
+  //             <div id="table">
+  //               <table>
     
-                    <tr class="service">
-                    <td class="tableitem"><p class="itemtext">2 X Product name</p></td>
-                    <td class="tableitem"><p class="itemtext"></p></td>
-                  </tr>
+  //                   <tr class="service">
+  //                   <td class="tableitem"><p class="itemtext">2 X Product name</p></td>
+  //                   <td class="tableitem"><p class="itemtext"></p></td>
+  //                 </tr>
                  
                   
     
-                </table>
-                <p>------------------------------------</p>
-                <p>Server Admin</p>
+  //               </table>
+  //               <p>------------------------------------</p>
+  //               <p>Server Admin</p>
             
-              </div><!--End Table-->
+  //             </div><!--End Table-->
     
-              <div id="legalcopy">
+  //             <div id="legalcopy">
                 
-              </div>
+  //             </div>
     
-            </div><!--End InvoiceBot-->
-      </div><!--End Invoice-->  
-    `,
-    });
-  };
+  //           </div><!--End InvoiceBot-->
+  //     </div><!--End Invoice-->  
+  //   `,
+  //   });
+  // };
 
   // logictoplaysound in this function we add condition to play sound when new order arrived in our app
   const logictoplaysound = async () => {
@@ -394,9 +428,7 @@ const Home = props => {
       if (id_value < getorderid) {
         setModal(true);
         console.log('Loading Sound');
-        //   SoundPlayer.playUrl('')
-        //   const { sound } = await Audio.Sound.createAsync(require("../../assets/ring.mp3"));
-        //   setSound(sound);
+        playsoundabc();
         console.log(getorderid, 'Playing Sound');
         const setidevalue = AsyncStorage.setItem(
           'idvalue',
@@ -521,21 +553,56 @@ const Home = props => {
     try {
       var connect = await StarPRNT.connect(port, "StarGraphic", false);
       console.log(connect, "printer"); // Printer Connected!
-       seterrorname(JSON.stringify(connect));
-       Alert.alert(JSON.stringify(connect));
-      //  if (JSON.stringify(connect) == "Success!") {
-         printabcs(port);
-      //  } else {
-      //   await AsyncStorage.removeItem('printerportnumber');
-      //  }
-
+       seterrorname(connect);
+       Alert.alert(connect);
+       if (connect == "Printer Connected"){
+        testprint(port);
+       } else {
+        await AsyncStorage.removeItem('printerportncumber');
+       }
+ 
     } catch (e) {
-      console.error(e.message, "abcddk");
+      // var gh = JSON.stringify(e.message);
+      console.error(JSON.stringify(e.message), "abcddk");
       Alert.alert(JSON.stringify(e.message));
-      seterrorname(e.message);
+      // seterrorname(JSON.stringify(e.message));
     }
   }
 
+
+
+
+  async function testprint(port) {
+  //console.log(wdata[0], "commands startt.....");
+
+    const orderdt = wdata[0];
+    const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;
+    const orderdatetime = datupdate(orderdt.date_created) ;
+    const customer_note = orderdt.customer_note;
+  let commands = [];
+commands.push({append:
+        "ONLINE Order\n" +
+        customername + "\n" +
+        orderdatetime + "\n" +
+        customer_note +"\n" +
+        "\n"});
+
+
+      {lineitems[0].map(function (k) {
+    commands.push({append:"" + k.quantity  + " x " + k.name + "" + "\n"})
+  })}  
+  commands.push({appendCutPaper:StarPRNT.CutPaperAction.PartialCutWithFeed});
+        console.log(commands, "Printing Command Press +++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+  
+  try {
+    var printResult = await StarPRNT.print("StarGraphic", commands, port);
+    console.log(printResult, "p326r2+62+62+3030+6+62+96+6"); // Success!
+    Alert.alert(JSON.stringify(printResult));
+  } catch (e) {
+    console.error(JSON.stringify(e));
+    Alert.alert(JSON.stringify(e.message));
+  }
+  }
 
 
 
@@ -543,7 +610,7 @@ const Home = props => {
   let commands = [];
 commands.push({append:
         "Star Clothing Boutique\n" +
-        "123 Star " + {sd} + " Road\n" +
+        "123 Star " + sd + " Road\n" +
         "City, State 12345\n" +
         "\n"});
 commands.push({appendCutPaper:StarPRNT.CutPaperAction.PartialCutWithFeed});
@@ -655,7 +722,7 @@ async function printStarL() {
     };
     Stopsoundabc();
 
-    var getprinterport = await AsyncStorage.getItem('printerportnumber');
+    var getprinterport = await AsyncStorage.getItem('printerportncumber');
     connect(getprinterport);
     fetch(
       `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${orderIDreal}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5  `,
@@ -697,23 +764,45 @@ async function printStarL() {
 
   const renderList = item => {
     return (
-      <Card style={styles.mycard}>
-        <View style={styles.cradView}>
-          <TouchableOpacity
-            onPress={() =>
-              props.navigation.navigate('Order Detail', {orderID: item.item.id})
-            }>
-            <View style={{marginLeft: 10}}>
-              <Text style={styles.text}>{item.item.date_created_gmt}</Text>
-              <Text style={styles.text}>
-                #{item.item.id} {item.item.billing.first_name}
-              </Text>
-              <Text style={styles.text}>status: {item.item.status}</Text>
-              <Text style={styles.text}>Total: {item.item.total}</Text>
-            </View>
-          </TouchableOpacity>
+
+      item.item.status == "processing" 
+      ?  
+      <Card style={styles.mycard2}> 
+      <View style={styles.cradView}>
+      <TouchableOpacity
+        onPress={() =>
+          props.navigation.navigate('Order Detail', {orderID: item.item.id})
+        }>
+        <View style={{marginLeft: 10}}>
+          <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text>
+          <Text style={styles.text}>
+            #{item.item.id} {item.item.billing.first_name}
+          </Text>
+          <Text style={styles.text}>status: {item.item.status}</Text>
+          <Text style={styles.text}>Total: {item.item.total}</Text>
         </View>
-      </Card>
+      </TouchableOpacity>
+    </View>
+  </Card>
+      : 
+      <Card style={styles.mycard}>
+      <View style={styles.cradView}>
+      <TouchableOpacity
+        onPress={() =>
+          props.navigation.navigate('Order Detail', {orderID: item.item.id})
+        }>
+        <View style={{marginLeft: 10}}>
+          <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text>
+          <Text style={styles.text}>
+            #{item.item.id} {item.item.billing.first_name}
+          </Text>
+          <Text style={styles.text}>status: {item.item.status}</Text>
+          <Text style={styles.text}>Total: {item.item.total}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  </Card>
+    
     );
   };
 
@@ -731,22 +820,27 @@ async function printStarL() {
       <TouchableOpacity onPress={() => printHTML()}>
         <Text>Print</Text>
       </TouchableOpacity> */}
-      <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
-        <Text style={{fontSize: 20}}>Last 10 Orders</Text>
-        <Text style={{fontSize: 20}}>sdf {errorname}</Text>
+
+      <TouchableOpacity 
+      onPress={()=>props.navigation.navigate("Printerabc")}>
+        <Text style={{padding:10}}>Printer: {printerportasync}</Text>
+
+      </TouchableOpacity>
+     
+    
+         <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
+        <Text style={{fontSize: 20}}>Last {wdata.length} Orders</Text>
+
       </View>
 
       <View> 
-      {console.log(printersarr, "cosdcsvn dsjbvdsb")}
+ 
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {list()}
       </View>
       
-      <TouchableOpacity 
-      onPress={()=>portDiscovery()}>
-        <Text style={{backgroundColor:"green", padding:30}}>Printer 1 Print</Text>
-
-      </TouchableOpacity>
+     
+    
     
      
 
@@ -768,40 +862,14 @@ async function printStarL() {
         }}>
         <View style={styles.modelView}>
           <View style={styles.modalButton}>
-            <TouchableOpacity
-              onPress={() => onclick(10)}>
-              <Text style={{backgroundColor: changecolor10, padding: 5, color:'#fff'}}>10</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => onclick(15)}>
-              <Text style={{backgroundColor: changecolor15,  padding: 5, color:'#fff'}}>15</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onclick(20)}>
-              <Text style={{backgroundColor: changecolor20,  padding: 5, color:'#fff'}}>20</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onclick(25)}>
-              <Text style={{backgroundColor: changecolor25,  padding: 5, color:'#fff'}}>25</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onclick(30)}>
-              <Text style={{backgroundColor: changecolor30,  padding: 5, color:'#fff'}}>30</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onclick(35)}>
-              <Text style={{backgroundColor: changecolor35,  padding: 5, color:'#fff'}}>35</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onclick(40)}>
-              <Text style={{backgroundColor: changecolor40,  padding: 5, color:'#fff'}}>40</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.modalButton}>
             <Button
               theme={theme}
               mode="contained"
-              onPress={() => OrderUpdate()}>
-              Accept
+              onPress={() =>  { Stopsoundabc(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
+              View Order
             </Button>
             <Button
-              mode="contained                                    "
+              mode="contained"
               onPress={() => closepop()}>
               Reject
             </Button>
@@ -858,9 +926,16 @@ const styles = StyleSheet.create({
   mycard: {
     margin: 5,
     padding: 5,
+    backgroundColor: '#90EE90'
+  },
+  mycard2: {
+    margin: 5,
+    padding: 5,
+    backgroundColor: '#03a9f4'
   },
   cradView: {
     flexDirection: 'row',
+   
   },
   text: {
     fontSize: 18,

@@ -17,7 +17,7 @@ PushNotification.createChannel(
     channelId: 'Indianaccent', // (required)
     channelName: 'Indian Accent', // (required)
     channelDescription: 'A channel to categorise your notifications', // (optional) default: undefined.
-    soundName: 'abc.ogg', // (optional) See `soundName` parameter of `localNotification` function
+    soundName: 'order.mp3', // (optional) See `soundName` parameter of `localNotification` function
     importance: 4, // (optional) default: 4. Int value of the Android notification importance
     vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
   },
@@ -27,9 +27,11 @@ PushNotification.configure({
   // (optional) Called when Token is generated (iOS and Android)
   onRegister: function (token) {
     console.log('TOKEN:', token.os, token.token);
-    const response = fetch(
-      `https://jdwebservices.com/aman/wp-json/wl/v1/savefcmtoken?submit=submit&os=${token.os}&token=${token.token}`,
+    let response = fetch(
+      `https://indianaccentyyc.ca/wp-json/wl/v1/savefcmtoken?submit=submit&os=${token.os}&token=${token.token}`,
     );
+    // var json =response.json();
+    console.log(JSON.stringify(response), "PushNotification")
   },
 
   // (required) Called when a remote is received or opened, or local notification is opened

@@ -16,12 +16,12 @@ import {
   } from "react-native-thermal-receipt-printer";
   import { StarPRNT } from 'react-native-print-star';
 import { NavigationContainer } from '@react-navigation/native';
-  const Printerabc = props => {
+  const Printermaabc = props => {
     const [printers, setPrinters] = useState([INetPrinter]);
   const [currentPrinter, setCurrentPrinter] = useState();
   const [iphost, setiphost] = useState('192.168.0.168');
   const [ipport, setipport] = useState('1900');
-  const [errorname, seterrorname] = useState('12');
+  const [errorname, seterrorname] = useState('');
   const [printersarr, setprintersarr] = useState([]);
 
   useEffect(() => {
@@ -32,29 +32,29 @@ import { NavigationContainer } from '@react-navigation/native';
   // Coonect to Printer
   async function connect(port) {
     console.log(port, "Port")
-    port = "TCP:192.168.1.108";
+    // port = "TCP:192.168.1.108";
     try {
       var connect = await StarPRNT.connect(port, "StarGraphic", false);
-      console.log(connect, "printer"); // Printer Connected!
+      console.log(typeof connect, "printer"); // Printer Connected!
     
-      var gh = JSON.stringify(connect);
+      // const gh = JSON.stringify(connect);
       // var ghparse = JSON.parse(gh);
-      seterrorname(JSON.stringify(connect));
-      //  if (ghparse == "Success!")
-      //  {
-        Alert.alert(JSON.stringify(connect));
-           AsyncStorage.setItem('printerportnumber', port); // trying to save port number in async storage
-      //  }
-       var getprinterport = AsyncStorage.getItem('printerportnumber');
-       seterrorname(getprinterport);
+      seterrorname(connect);
+       if (connect == "Printer Connected")
+       {
+        Alert.alert(connect);
+           AsyncStorage.setItem('printerportncumber', port); // trying to save port number in async storage
+       }
+      //  var getprinterport = AsyncStorage.getItem('printerportncumber');
+      //  seterrorname(getprinterport);
        
       
 
     } catch (e) {
-      console.error(e.message, "abcddk");
-      // var gh = JSON.stringify(e.message);
-      Alert.alert(e.message);
-      seterrorname(e.message);
+      var gh = JSON.stringify(e.message);
+      console.error(gh, "abcddk");
+      Alert.alert(gh);
+      // seterrorname(JSON.stringify(e.message));
     }
   }
   
@@ -91,13 +91,13 @@ import { NavigationContainer } from '@react-navigation/native';
   const list = () => {
     return printersarr.map((element) => {
       return (
-        <View key={element.key} style={{margin: 10}}>
+        <View key={element.portName} style={{margin: 10}}>
           <Text>{element.modelName}</Text>
           <Text>{element.macAddress}</Text>
           <Text>{element.portName}</Text>
           <Text>{element.USBSerialNumber}</Text>
-      <TouchableOpacity onPress={() => connect(`${element.portName}`)}>
-        <Text>click to connect</Text>
+      <TouchableOpacity  onPress={() => connect(`${element.portName}`)}>
+        <Text style={{padding:10, backgroundColor:'#222', color:'#fff', width:"40%", textAlign:'center'}}>click to connect</Text>
       </TouchableOpacity>
          
         </View>
@@ -110,29 +110,25 @@ import { NavigationContainer } from '@react-navigation/native';
         <View style={styles.container}>
 
 <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
-        <Text style={{fontSize: 20}}>Last 10 Orders</Text>
-        <Text style={{fontSize: 20}}>sdf {errorname}</Text>
+       
+        <Text style={{fontSize: 20}}>{errorname}</Text>
       </View>
 
-      <View> 
-      {console.log(printersarr, "cosdcsvn dsjbvdsb")}
+      <View style={{marginBottom:30}}> 
+
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {list()}
       </View>
       
       <TouchableOpacity 
       onPress={()=>portDiscovery()}>
-        <Text style={{backgroundColor:"green", padding:30}}>Printer 1 Print</Text>
+        <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Printers</Text>
 
       </TouchableOpacity>
-      <TouchableOpacity 
-      onPress={()=>connect("ABC")}>
-        <Text style={{backgroundColor:"green", padding:30}}>Connect Print</Text>
-
-      </TouchableOpacity>
+     
       <TouchableOpacity 
       onPress={()=>props.navigation.navigate("Home")}>
-        <Text style={{backgroundColor:"red", padding:30, color:"#fff"}}>Go To Home</Text>
+        <Text style={{backgroundColor:"#222", padding:10, color:"#fff"}}>Go To Home</Text>
 
       </TouchableOpacity>
             
@@ -153,4 +149,4 @@ const styles = StyleSheet.create({
     }
     });  
 
-export default Printerabc;
+export default Printermaabc;

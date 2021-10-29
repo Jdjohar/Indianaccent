@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Card, Button} from 'react-native-paper';
 import {
@@ -21,9 +22,11 @@ import SoundPlayer from 'react-native-sound-player';
 // import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import RNPrint from 'react-native-print';
 import { StarPRNT } from 'react-native-print-star';
-
+import { ck, cs } from "../screens/utils/keys";
 const Home = props => {
   const [wdata, setwData] = useState('');
+  const [lastsingleorderdata, setlastsingleorderdata] = useState([]);
+  const [diffsecond, setdiffsecond] = useState('0');
   const [lineitems, setlineitems] = useState([]);
   const [orderID, setOrderID] = useState('');
   const [orderIDreal, setOrderIDreal] = useState('');
@@ -45,6 +48,9 @@ const Home = props => {
   const [sd, setsd] = useState('ABC Test');
 
   useEffect(() => {
+
+    // console.log(ck, cs, "keysdsdcdscd")
+
     let isMounted = true;
     //  fetchorder function fetch new orders and play a sound when new order arrived
     const fetchorder = async () => {
@@ -58,36 +64,152 @@ const Home = props => {
       try {
         let items = await fetch(
           // 'https://jdwebservices.com/aman/wp-json/wc/v3/orders?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073',
-          'https://indianaccentyyc.ca/wp-json/wc/v3/orders?per_page=20&consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5'
+          // 'https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders?per_page=20&consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5'
+          `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders?per_page=20&consumer_key=${ck}&consumer_secret=${cs}`
         );
         var json = await items.json();
-        //   console.log(json, "hello");
+          // console.log(json, "hello");
         const wooorderID = 1 + json[0].id;
         const wooorderIDreal = json[0].id;
-        const woosecondlastorderID = json[1].id;
+        // const woosecondlastorderID = json[1].id;
         const woostatus = json[0].status;
         const woototal = json[0].total;
         const woolineitem = json[0].line_items;
-        // console.log(woolineitem, 'woolineitem asxcascds');
-
+        const woolastsingleorder = json[0];
+        setlastsingleorderdata([woolastsingleorder]);
+        // logictoplaysound();//
         setlineitems([woolineitem]);
-
-        var id_valueyt = await AsyncStorage.getItem('idvalue');
-        // console.log(id_valueyt, 'In Fetch Order');
-        if (id_valueyt == null || id_valueyt == '') {
-          console.log(wooorderID, 'wooorderID Plain');
-          AsyncStorage.setItem('idvalue', wooorderID.toString()); // +1
-          setidvalue(wooorderID);
-        }
-        // console.log(wooorderIDreal, 'wooorderIDreal Plain');
-        AsyncStorage.setItem('orderid', wooorderIDreal.toString()); // normal
         setwData(json);
-        setOrderID(wooorderID);
-        setOrderIDreal(wooorderIDreal);
+
+        function formatAMPM(date) {
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var ampm = hours >= 12 ? 'pm' : 'am';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? '0'+minutes : minutes;
+          var strTime = hours + ':' + minutes + ' ' + ampm;
+          return strTime;
+        }
+        var lastorderdate1 =  woolastsingleorder.date_created;
+        // console.log(formatAMPM(lastorderdate1), "sdcmdscndsndsn");
+        
+        var lastorderdate =  datupdate(woolastsingleorder.date_created);
+        var lastorderdatemi =  datupdateminutes(woolastsingleorder.date_created);
+        var lastorderdate1 =  woolastsingleorder.date_created;
+
+        var abc =  datupdateminutes(new Date())
+
+
+        const diffInMilliseconds1 = Math.abs(new Date(abc) - new Date(lastorderdatemi));
+        var diff = diffInMilliseconds1/1000;
+        setdiffsecond(diff);
+console.log(diff, 'asdcxdasds'); //86400000
+
+        
+        // console.log(diffInMilliSeconds + " diffInMilliSeconds");
+
+console.log(abc.toLocaleString() + " ABC Time");
+console.log(lastorderdatemi+ " Alastorderdatemi BC Time");
+console.log(lastorderdate+ " Order Time");
+
+
+        // console.log(abc, 'ABC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    
+
+
+
+
+        const lastorderstatus = woolastsingleorder.status;
+        var abc =  datupdate(new Date());//.toLocaleTimeString();
+        // console.log(lastorderdate, 'sd', abc, "s")
+
+
+
+        // var msDiff = new Date(lastorderdate).getTime() - new Date(abc).getTime();    //Future date - current date
+// var daysTill30June2035 =  getDifferenceInSeconds(abc,lastorderdate); //Math.floor(msDiff / (1000 * 60 * 60 * 24));
+// console.log(daysTill30June2035);
+        // console.log(daysTill30June2035, '54ABC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    
+      if (lastorderstatus == "processing" && diff < 5000) {
+
+        setModal(true);
+        // modelpopup()
+        console.log('Loading Sound');
+        Stopsoundabc();
+        playsoundabc();
+        console.log( 'Playing Sound');
+        // const setidevalue = AsyncStorage.setItem(
+        //   'idvalue',
+        //   // getorderid.toString(),
+        // );
+        // console.log(setidevalue, 'setidevalue in play sound');
+        // setidvalue(getorderid);
+        shownotification();
+      } else {
+        console.log('Eles part running');
+        console.log('__________________________________');
+        shownotification();
+      }
+        // var id_valueyt = await AsyncStorage.getItem('idvalue');
+        // // console.log(id_valueyt, 'In Fetch Order');
+        // if (id_valueyt == null || id_valueyt == '') {
+        //   console.log(wooorderID, 'wooorderID Plain');
+        //   AsyncStorage.setItem('idvalue', wooorderID.toString()); // +1
+        //   setidvalue(wooorderID);
+        // }
+        // console.log(wooorderIDreal, 'wooorderIDreal Plain');
+        // AsyncStorage.setItem('orderid', wooorderIDreal.toString()); // normal
+        // setwData(json);
+        // setOrderID(wooorderID);
+        // setOrderIDreal(wooorderIDreal);
       } catch (error) {
         console.error(error);
       }
     };
+
+    // const fetchorder = async () => {
+    //   var getprinterport = await AsyncStorage.getItem('printerportncumber');
+    //   if(getprinterport != null || getprinterport != ''){
+    //     setprinterportasync(getprinterport);
+    //   }else {
+    //   setprinterportasync("Not Connected");
+    //   }
+    //   console.log('fetch process start');
+    //   try {
+    //     let items = await fetch(
+    //       // 'https://jdwebservices.com/aman/wp-json/wc/v3/orders?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073',
+    //       // 'https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders?per_page=20&consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5'
+    //       `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders?per_page=20&consumer_key=${ck}&consumer_secret=${cs}`
+    //     );
+    //     var json = await items.json();
+    //       console.log(json, "hello");
+    //     const wooorderID = 1 + json[0].id;
+    //     const wooorderIDreal = json[0].id;
+    //     // const woosecondlastorderID = json[1].id;
+    //     const woostatus = json[0].status;
+    //     const woototal = json[0].total;
+    //     const woolineitem = json[0].line_items;
+    //     // console.log(wooorderID, 'woolineitem asxcascds');
+
+    //     setlineitems([woolineitem]);
+
+    //     var id_valueyt = await AsyncStorage.getItem('idvalue');
+    //     // console.log(id_valueyt, 'In Fetch Order');
+    //     if (id_valueyt == null || id_valueyt == '') {
+    //       console.log(wooorderID, 'wooorderID Plain');
+    //       AsyncStorage.setItem('idvalue', wooorderID.toString()); // +1
+    //       setidvalue(wooorderID);
+    //     }
+    //     // console.log(wooorderIDreal, 'wooorderIDreal Plain');
+    //     AsyncStorage.setItem('orderid', wooorderIDreal.toString()); // normal
+    //     setwData(json);
+    //     setOrderID(wooorderID);
+    //     setOrderIDreal(wooorderIDreal);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const unsubscribe = messaging().onMessage(async remoteMessage => {
      // playsoundabc();
@@ -97,7 +219,7 @@ const Home = props => {
     // set interval refresh the app every 10 seconds
     setInterval(() => {
       fetchorder();
-      logictoplaysound();//
+      // logictoplaysound();//
     }, 5000);
     return unsubscribe;
   }, []);
@@ -117,7 +239,7 @@ const Home = props => {
     minutes = minutes < 10 ? '0' + minutes : minutes; 
     var formatted = 
         (t.toString().split(' ')[0]) 
-        + ', ' +('0' + t.getDate()).slice(-2) 
+        + ' ' +('0' + t.getDate()).slice(-2) 
         + '/' + ('0' + (t.getMonth() + 1) ).slice(-2)
         + '/' + (t.getFullYear())
         + ' - ' + ('0' + t.getHours()).slice(-2)
@@ -125,6 +247,23 @@ const Home = props => {
         + ' ' + newformat;
 
         return formatted;
+
+  }
+  const datupdateminutes = (dataeupdatev) => {
+    var t = new Date(dataeupdatev);
+    var hours = t.getHours();
+    var minutes = t.getMinutes();
+    var newformat = t.getHours() >= 12 ? 'PM' : 'AM';  
+    
+    // Find current hour in AM-PM Format 
+    hours = hours % 12;  
+    
+    // To display "0" as "12" 
+    hours = hours ? hours : 12;  
+    minutes = minutes < 10 ? '0' + minutes : minutes; 
+    // var formatted = ('0' + t.getHours()).slice(-2)   + ':' + ('0' + t.getMinutes()).slice(-2) + ' ' + newformat;
+    var formatted = (t.getFullYear())  + '/' +  ('0' + (t.getMonth() + 1) ).slice(-2) + '/' + ('0' + t.getDate()).slice(-2) + ' ' + ('0' + t.getHours()).slice(-2)   + ':' + ('0' + t.getMinutes()).slice(-2) + ':' + ('0' + t.getSeconds()).slice(-2) ;
+    return formatted;
 
   }
   // play sound
@@ -158,284 +297,45 @@ const Home = props => {
     setModal(false);
   };
 
-  // const printHTML = async () => {
-  //   await RNPrint.print({
-  //     html: `
-
-  //     <style>
-  //     #invoice-POS{
-  //       box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
-  //       padding:2mm;
-  //       margin: 0 auto;
-  //       width: 44mm;
-  //       background: #FFF;
-        
-        
-  //     ::selection {background: #f31544; color: #FFF;}
-  //     ::moz-selection {background: #f31544; color: #FFF;}
-  //     h1{
-  //       font-size: 1.5em;
-  //       color: #222;
-  //     }
-  //     h2{font-size: .9em;}
-  //     h3{
-  //       font-size: 1.2em;
-  //       font-weight: 300;
-  //       line-height: 2em;
-  //     }
-  //     p{
-  //       font-size: .7em;
-  //       color: #666;
-  //       line-height: 1.2em;
-  //     }
-       
-  //     #top, #mid,#bot{ /* Targets all id with 'col-' */
-  //       border-bottom: 1px solid #EEE;
-  //     }
-      
-  //     #top{min-height: 100px;}
-  //     #mid{min-height: 80px;} 
-  //     #bot{ min-height: 50px;}
-      
-  //     #top .logo{
-  //       //float: left;
-  //       height: 60px;
-  //       width: 60px;
-  //       background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-  //       background-size: 60px 60px;
-  //     }
-  //     .clientlogo{
-  //       float: left;
-  //       height: 60px;
-  //       width: 60px;
-  //       background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-  //       background-size: 60px 60px;
-  //       border-radius: 50px;
-  //     }
-  //     .info{
-  //       display: block;
-  //       //float:left;
-  //       margin-left: 0;
-  //     }
-  //     .title{
-  //       float: right;
-  //     }
-  //     .title p{text-align: right;} 
-  //     table{
-  //       width: 100%;
-  //       border-collapse: collapse;
-  //     }
-  //     td{
-  //       //padding: 5px 0 5px 15px;
-  //       //border: 1px solid #EEE
-  //     }
-  //     .tabletitle{
-  //       //padding: 5px;
-  //       font-size: .5em;
-  //       background: #EEE;
-  //     }
-  //     .service{border-bottom: 1px solid #EEE;}
-  //     .item{width: 24mm;}
-  //     .itemtext{font-size: .5em;}
-      
-  //     #legalcopy{
-  //       margin-top: 5mm;
-  //     }
-  //     }</style>
-      
-  //     <div id="invoice-POS">
-        
-  //       <center id="top">
-  //         <div class="logo"></div>
-  //         <div class="info"> 
-  //           <h2></h2>
-  //         </div><!--End Info-->
-  //       </center><!--End InvoiceTop-->
-        
-       
-        
-  //       <div id="bot">
-    
-  //             <div id="table">
-  //               <table>
-                  
-    
-  //                 ${lineitems[0].map(function (k) {
-  //                   return `
-  //                   <tr class="service">
-  //                   <td class="tableitem"><p class="itemtext">${k.quantity} ${k.name}</p></td>
-  //                   <td class="tableitem"><p class="itemtext"></p></td>
-  //                 </tr>`;
-  //                 })}
-                  
-    
-  //               </table>
-  //               <p>------------------------------------</p>
-  //               <p>Server Admin</p>
-  //               <p> ${currentDateTime}</p>
-  //             </div><!--End Table-->
-    
-  //             <div id="legalcopy">
-                
-  //             </div>
-    
-  //           </div><!--End InvoiceBot-->
-  //     </div><!--End Invoice-->  
-  //   `,
-  //   });
-  // };
-
-  // const printHTMLtest = async () => {
-  //   await RNPrint.print({
-  //     html: `
-
-  //     <style>
-  //     #invoice-POS{
-  //       box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
-  //       padding:2mm;
-  //       margin: 0 auto;
-  //       width: 44mm;
-  //       background: #FFF;
-        
-        
-  //     ::selection {background: #f31544; color: #FFF;}
-  //     ::moz-selection {background: #f31544; color: #FFF;}
-  //     h1{
-  //       font-size: 1.5em;
-  //       color: #222;
-  //     }
-  //     h2{font-size: .9em;}
-  //     h3{
-  //       font-size: 1.2em;
-  //       font-weight: 300;
-  //       line-height: 2em;
-  //     }
-  //     p{
-  //       font-size: .7em;
-  //       color: #666;
-  //       line-height: 1.2em;
-  //     }
-       
-  //     #top, #mid,#bot{ /* Targets all id with 'col-' */
-  //       border-bottom: 1px solid #EEE;
-  //     }
-      
-  //     #top{min-height: 100px;}
-  //     #mid{min-height: 80px;} 
-  //     #bot{ min-height: 50px;}
-      
-  //     #top .logo{
-  //       //float: left;
-  //       height: 60px;
-  //       width: 60px;
-  //       background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-  //       background-size: 60px 60px;
-  //     }
-  //     .clientlogo{
-  //       float: left;
-  //       height: 60px;
-  //       width: 60px;
-  //       background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-  //       background-size: 60px 60px;
-  //       border-radius: 50px;
-  //     }
-  //     .info{
-  //       display: block;
-  //       //float:left;
-  //       margin-left: 0;
-  //     }
-  //     .title{
-  //       float: right;
-  //     }
-  //     .title p{text-align: right;} 
-  //     table{
-  //       width: 100%;
-  //       border-collapse: collapse;
-  //     }
-  //     td{
-  //       //padding: 5px 0 5px 15px;
-  //       //border: 1px solid #EEE
-  //     }
-  //     .tabletitle{
-  //       //padding: 5px;
-  //       font-size: .5em;
-  //       background: #EEE;
-  //     }
-  //     .service{border-bottom: 1px solid #EEE;}
-  //     .item{width: 24mm;}
-  //     .itemtext{font-size: .5em;}
-      
-  //     #legalcopy{
-  //       margin-top: 5mm;
-  //     }
-  //     }</style>
-      
-  //     <div id="invoice-POS">
-        
-  //       <center id="top">
-  //         <div class="logo"></div>
-  //         <div class="info"> 
-  //           <h2></h2>
-  //         </div><!--End Info-->
-  //       </center><!--End InvoiceTop-->
-        
-       
-        
-  //       <div id="bot">
-    
-  //             <div id="table">
-  //               <table>
-    
-  //                   <tr class="service">
-  //                   <td class="tableitem"><p class="itemtext">2 X Product name</p></td>
-  //                   <td class="tableitem"><p class="itemtext"></p></td>
-  //                 </tr>
-                 
-                  
-    
-  //               </table>
-  //               <p>------------------------------------</p>
-  //               <p>Server Admin</p>
-            
-  //             </div><!--End Table-->
-    
-  //             <div id="legalcopy">
-                
-  //             </div>
-    
-  //           </div><!--End InvoiceBot-->
-  //     </div><!--End Invoice-->  
-  //   `,
-  //   });
-  // };
-
-  // logictoplaysound in this function we add condition to play sound when new order arrived in our app
+  
   const logictoplaysound = async () => {
     console.log('Logic process start');
     // console.log(lineitems[0], 'lineitems');
-
-    try {
-      var id_value = await AsyncStorage.getItem('idvalue'); // id value + 1
-      setidvalue(id_value);
-      var getorderid = await AsyncStorage.getItem('orderid'); // normal, 89
-      console.log(
-        id_value,
-        'Id value',
-        getorderid,
-        'OrderID',
-        'In logic Process Start',
-      );
-      if (id_value < getorderid) {
+  try {
+    // console.log(lastsingleorderdata)
+      if (lastsingleorderdata.length > 0) {
+        lastorderstatus = lastsingleorderdata.date_created;
+        console.log(lastorderstatus, "ssdcdss")
+        var timeabc = datupdate(lastsingleorderdata.date_created) 
+        console.log(timeabc, "ss")
+     
+      }else {
+         lastorderstatus = 'dfgf';
+      }
+      // var id_value = await AsyncStorage.getItem('idvalue'); // id value + 1
+      // setidvalue(id_value);
+      // var getorderid = await AsyncStorage.getItem('orderid'); // normal, 89
+      // console.log(
+      //   id_value,
+      //   'Id value',
+      //   getorderid,
+      //   'OrderID',
+      //   'In logic Process Start',
+      // );
+      console.log(lastorderstatus, "sdcndsjncdsindscvn");
+      if (lastorderstatus == "processing") {
+        
         setModal(true);
+        // modelpopup()
         console.log('Loading Sound');
         playsoundabc();
-        console.log(getorderid, 'Playing Sound');
-        const setidevalue = AsyncStorage.setItem(
-          'idvalue',
-          getorderid.toString(),
-        );
-        console.log(setidevalue, 'setidevalue in play sound');
-        setidvalue(getorderid);
+        console.log( 'Playing Sound');
+        // const setidevalue = AsyncStorage.setItem(
+        //   'idvalue',
+        //   // getorderid.toString(),
+        // );
+        // console.log(setidevalue, 'setidevalue in play sound');
+        // setidvalue(getorderid);
         shownotification();
       } else {
         console.log('Eles part running');
@@ -455,7 +355,7 @@ const Home = props => {
     };
 
     fetch(
-      `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${orderIDreal}/notes?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
+      `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders/${orderIDreal}/notes?consumer_key=${ck}&consumer_secret=${cs}`,
       // `https://jdwebservices.com/aman/wp-json/wc/v3/orders/${orderIDreal}/notes?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073`,
       {
         method: 'POST', // or 'POST'
@@ -475,78 +375,6 @@ const Home = props => {
         setModal(false);
       });
   };
-
-  const onclick = async id => {
-    if(id == "10")
-    {
-    setchangecolor10("black");
-    setchangecolor15("#006aff");
-    setchangecolor20("#006aff");
-    setchangecolor25("#006aff");
-    setchangecolor30("#006aff");
-    setchangecolor35("#006aff");
-    setchangecolor40("#006aff");
-    }else if(id == "15"){
-      setchangecolor10("#006aff");
-      setchangecolor15("black");
-      setchangecolor20("#006aff");
-      setchangecolor25("#006aff");
-      setchangecolor30("#006aff");
-      setchangecolor35("#006aff");
-      setchangecolor40("#006aff");
-    }else if(id == "20"){
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("black");
-      setchangecolor25("#006aff");
-      setchangecolor30("#006aff");
-      setchangecolor35("#006aff");
-      setchangecolor40("#006aff");
-    }else if(id == "25"){
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("#006aff");
-      setchangecolor25("black");
-      setchangecolor30("#006aff");
-      setchangecolor35("#006aff");
-      setchangecolor40("#006aff");
-    }else if(id == "30"){
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("#006aff");
-      setchangecolor25("#006aff");
-      setchangecolor30("black");
-      setchangecolor35("#006aff");
-      setchangecolor40("#006aff");
-    }else if(id == "35"){
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("#006aff");
-      setchangecolor25("#006aff");
-      setchangecolor30("#006aff");
-      setchangecolor35("black");
-      setchangecolor40("#006aff");
-    }else if(id == "40"){
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("#006aff");
-      setchangecolor25("#006aff");
-      setchangecolor30("#006aff");
-      setchangecolor35("#006aff");
-      setchangecolor40("black");
-    }
-    else{
-      setchangecolor10("#006aff");
-      setchangecolor15("#006aff");
-      setchangecolor20("#006aff");
-      setchangecolor25("#006aff");
-      setchangecolor30("#006aff");
-      setchangecolor35("#006aff");
-      setchangecolor40("#006aff");
-    }
-    setordertime(id);
-  };
-
 
   async function connect(port) {
     console.log(port, "Port")
@@ -662,89 +490,6 @@ async function printStarL() {
   // },
   //   ]
 
-
-  const portDiscovery = async () => {
-    console.log('Test Print portDiscovery')
-    try {
-      const printerads =   await StarPRNT.portDiscovery('All');
-      setprintersarr(printerads);
-      console.log(printersarr,  "Print Succdsfgess");
-      // connect();
-      print();
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  const portDiscoveryStar = async () => {
-    console.log('Test Print portDiscoveryStar')
-    try {
-      const printers = await StarPRNT.portDiscovery('All');
-      console.log(printers,  "Print Succdsfgess");
-      connect();
-      printStarL();
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  const portDiscoveryprintabcs = async () => {
-    console.log('Test Print portDiscoveryprintabcs')
-    try {
-      // let printers = await StarPRNT.portDiscovery('All');
-      // console.log(printers,  "Print Succdsfgess");
-      // connect();
-      printabcs();
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // Update the order status
-  const OrderUpdate = async () => {
-    setModal(false);
-    const orderstatus = {
-      status: 'completed',
-    };
-    Stopsoundabc();
-
-    var getprinterport = await AsyncStorage.getItem('printerportncumber');
-    connect(getprinterport);
-    fetch(
-      `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${orderIDreal}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5  `,
-      {
-        method: 'PUT', // or 'POST'
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderstatus),
-      },
-    )
-      .then(response => response.json())
-      .then(data => {
-        addnote();
-        console.log('Success:', data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        setModal(false);
-      });
-  };
-
   const list = () => {
     return printersarr.map((element) => {
       return (
@@ -757,10 +502,39 @@ async function printStarL() {
         <Text>Trying to connect</Text>
       </TouchableOpacity>
          
+      </View>
+    );
+  });
+};
+
+
+  const modelpopup = () => {  return (
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modal}
+        onRequestClose={() => {
+          setModal(false);
+        }}>
+        <View style={styles.modelView}>
+          <View style={styles.modalButton}>
+            <Button
+              theme={theme}
+              mode="contained"
+              onPress={() =>  { Stopsoundabc(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
+              View Order
+            </Button>
+            <Button
+              mode="contained"
+              onPress={() => closepop()}>
+              Reject
+            </Button>
+          </View>
+          <Button onPress={() => closepop()}>Cancel</Button>
         </View>
-      );
-    });
-  };
+      </Modal>
+  )
+  }
 
   const renderList = item => {
     return (
@@ -829,6 +603,7 @@ async function printStarL() {
      
     
          <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
+           <Text>{diffsecond}</Text>
         <Text style={{fontSize: 20}}>Last {wdata.length} Orders</Text>
 
       </View>
@@ -837,12 +612,8 @@ async function printStarL() {
  
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {list()}
+      {modelpopup()}
       </View>
-      
-     
-    
-    
-     
 
       <FlatList
         data={wdata}
@@ -853,30 +624,7 @@ async function printStarL() {
         keyExtractor={item => `${item.id}`}
       />
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modal}
-        onRequestClose={() => {
-          setModal(false);
-        }}>
-        <View style={styles.modelView}>
-          <View style={styles.modalButton}>
-            <Button
-              theme={theme}
-              mode="contained"
-              onPress={() =>  { Stopsoundabc(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
-              View Order
-            </Button>
-            <Button
-              mode="contained"
-              onPress={() => closepop()}>
-              Reject
-            </Button>
-          </View>
-          <Button onPress={() => closepop()}>Cancel</Button>
-        </View>
-      </Modal>
+      
     </View>
   );
 };

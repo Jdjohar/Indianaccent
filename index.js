@@ -28,7 +28,7 @@ PushNotification.configure({
   onRegister: function (token) {
     console.log('TOKEN:', token.os, token.token);
     let response = fetch(
-      `https://indianaccentyyc.ca/wp-json/wl/v1/savefcmtoken?submit=submit&os=${token.os}&token=${token.token}`,
+      `https://indianaccentyyc.ca/shop/wp-json/wl/v1/savefcmtoken?submit=submit&os=${token.os}&token=${token.token}`,
     );
     // var json =response.json();
     console.log(JSON.stringify(response), "PushNotification")

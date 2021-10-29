@@ -9,6 +9,7 @@ import {
   FlatList,
   Modal,
   ScrollView,
+  VirtualizedList,
   SafeAreaView,
   Alert,
 } from 'react-native';
@@ -16,7 +17,7 @@ import {Card, Button, FAB} from 'react-native-paper';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StarPRNT } from 'react-native-print-star';
-
+import { ck, cs } from "../screens/utils/keys";
 
 // const [selectedPrinter,setselectedPrinter] =useState('');
 // import { Audio } from 'expo-av';
@@ -28,7 +29,7 @@ import { StarPRNT } from 'react-native-print-star';
 //     })
 //   }
 
-const OrderList = ({route}) => {
+const OrderList = ({route,navigation}) => {
 
   const [wdata, setwData] = useState('');
   const [wdataall, setwDataall] = useState('');
@@ -174,7 +175,7 @@ const OrderList = ({route}) => {
     console.log(data, "data +++++++++++++")
 
     fetch(
-      `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}/notes?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
+      `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders/${OrderIDfromHome}/notes?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
       // `https://jdwebservices.com/aman/wp-json/wc/v3/orders/${OrderIDfromHome}/notes?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073`,
       {
         method: 'POST', // or 'POST'
@@ -266,29 +267,25 @@ const OrderList = ({route}) => {
 var orderstatus = {
   status: orderstatusupdate,
 };
-
     if (orderstatusupdate == "completed") {
       const note = wdataall.customer_note;
       orderstatus = {
         status: orderstatusupdate,
-        customer_note: note + ` Your Order will Prepair within ${ordertime} minutes`,
+        customer_note: note + ` Your Order will Prepair within ${ordertime} minutes`, 
       };
     }else {
     orderstatus = {
       status: orderstatusupdate,
     };
     }
-    
-
     if (orderstatusupdate == "completed") {
       var getprinterport = await AsyncStorage.getItem('printerportncumber');
       connect(getprinterport);
       console.log(getprinterport,"print port async", OrderIDfromHome)
     }
-   // Stopsoundabc();
-    
+   
     fetch(
-      `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
+      `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=${ck}&consumer_secret=${cs}`,
       // `https://jdwebservices.com/aman/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073`,
       {
         method: 'PUT', // or 'POST'
@@ -302,10 +299,7 @@ var orderstatus = {
       .then(data => {
         setIsSubmit(false);
         Alert.alert("Order Status:" , orderstatusupdate)
-        // if (orderstatusupdate == "completed") {
-        //   addnote();
-        // }
-
+        navigation.navigate("Home")
       })
       .catch(error => {
         console.error('Error:', error);
@@ -320,10 +314,10 @@ var orderstatus = {
       console.log(abcd, "abcd ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
      
       let items = await fetch(
-        `https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`,
+        `https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=${ck}&consumer_secret=${cs}`,
         // `https://jdwebservices.com/aman/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_169efa4f8234008f585604685ced1d8ae88e9635&consumer_secret=cs_0e67c5a70afbf45970ffe0a4c39d6567f9bf3073`,
       );
-      // let items = await fetch(`https://indianaccentyyc.ca/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`);
+      // let items = await fetch(`https://indianaccentyyc.ca/shop/wp-json/wc/v3/orders/${OrderIDfromHome}?consumer_key=ck_93d6fc3f513b9e972768c4d2906fde5874d00089&consumer_secret=cs_733a061b770250bb164852869d383e20eb442da5`);
       var json = await items.json();
         // console.log(json, "hello");
       //   console.log(json.total, "total amount");
@@ -398,20 +392,23 @@ var orderstatus = {
     <ActivityIndicator size="large" color="#602bc2" />
  </View>
  :
- <ScrollView>
+ <SafeAreaView>
+       
+<ScrollView>
     <View style={styles.container}>
       {/* <Button onPress={() => printHTML()} title="Print HTML" /> */}
 
-      <View style={styles.box3}>
+      <View style={styles.box4}>
           <View style={styles.inner} />
           <Text style={{fontSize:15, paddingBottom:10}}>Customer Information</Text>
           <Text>Full Name: {billing.first_name } {billing.last_name}</Text>
           <Text>Email: {billing.email }</Text>
           <Text>Phone: {billing.phone }</Text>
+          <Text>Note: {wdataall.customer_note }</Text>
         </View>
 
       <View style={styles.container_home2}>
-        <View style={styles.box2}>
+        <View style={styles.box2 }>
           <View style={styles.inner}>
             <Text style={{fontWeight: 'bold',textAlign:'center' }}>Products </Text>
           </View>
@@ -424,7 +421,34 @@ var orderstatus = {
       
       </View>
       <View>
-      <FlatList
+
+
+
+{lineitems.map(item => {
+  return(
+    <View key={item.id} style={styles.container_home}>
+        
+    <View key={item.id} style={styles.box}>
+        <View style={styles.inner}>
+            <Text style={{textAlign:'center'}}>{item.name} X {item.quantity}</Text>
+        </View>
+   </View> 
+      
+                <View style={styles.box}>
+                  <View style={styles.inner}>
+                    <Text style={{textAlign:'center'}}>${item.subtotal}</Text>
+                    </View>
+
+</View> 
+<View style={{paddingLeft: 50}}><Text style={{textAlign:'center'}}>--------------------------------------------------</Text></View>
+</View>  
+  
+)
+})}
+
+
+
+{/* <FlatList
         data={wdata[0]}
         nestedScrollEnabled
         renderItem={item => {
@@ -432,11 +456,12 @@ var orderstatus = {
           return renderList(item.item);
         }}
         keyExtractor={item => `${item.id}`}
-      />
-     </View>
+      /> */}
+
 <View style={{backgroundColor:'#222', height:2, marginTop:15}}>
               </View>
-      <View style={styles.container_home2}>
+
+              <View style={styles.container_home2}>
         <View style={styles.box2}>
           <View style={styles.inner}>
             <Text style={{textAlign:'center'}}>Tax</Text>
@@ -448,6 +473,10 @@ var orderstatus = {
           </View>
         </View>
       </View>
+
+     </View>
+
+     
       <View style={styles.container_home2}>
         <View style={styles.box2}>
           <View style={styles.inner}>
@@ -496,6 +525,18 @@ var orderstatus = {
            
             </View>
                     </View>
+        </View>
+
+        <View style={styles.box3}>
+          <View style={styles.inner}>
+            {/* <Text>{productstatus}</Text> */}
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>
+            <TouchableOpacity style={{padding:10, backgroundColor:'#03a9f4'}} onPress={() => testprint()}>
+            <Text style={{color:'#fff'}}>Re-Print</Text>
+      </TouchableOpacity>
+             
+              </View>
+          </View>
         </View>
        
        
@@ -556,9 +597,10 @@ var orderstatus = {
         </View>
       </Modal>
 
-      
+    
       </View>
- </ScrollView>
+      </ScrollView>
+ </SafeAreaView>
   );
 };
 
@@ -600,6 +642,12 @@ const styles = StyleSheet.create({
     padding: 5,
     width: '100%',
     height: 50,
+  },
+
+   box4: {
+    padding: 10,
+   margin: 10,
+    backgroundColor:'#ffffff'
   },
   box1: {
     padding: 5,

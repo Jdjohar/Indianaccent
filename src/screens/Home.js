@@ -573,7 +573,6 @@ const Home = props => {
 
 
   async function testprint(port) {
-  //console.log(wdata[0], "commands startt.....");
 
     const orderdt = wdata[0];
     const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;

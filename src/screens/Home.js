@@ -23,6 +23,7 @@ import SoundPlayer from 'react-native-sound-player';
 import RNPrint from 'react-native-print';
 import { StarPRNT } from 'react-native-print-star';
 import { ck, cs } from "../screens/utils/keys";
+import moment from 'moment';
 const Home = props => {
   const [wdata, setwData] = useState('');
   const [lastsingleorderdata, setlastsingleorderdata] = useState([]);
@@ -46,15 +47,23 @@ const Home = props => {
   const [printerportasync, setprinterportasync] = useState('');
   const [currentDateTime, setcurrentDateTime] = useState(new Date());
   const [sd, setsd] = useState('ABC Test');
+  
 
   useEffect(() => {
-
-    // console.log(ck, cs, "keysdsdcdscd")
+    // var currenttime = moment().utc().local().format('Z');
 
     let isMounted = true;
     //  fetchorder function fetch new orders and play a sound when new order arrived
     const fetchorder = async () => {
-      var getprinterport = await AsyncStorage.getItem('printerportncumber');
+      // await AsyncStorage.getItem("epsonprinter").then(
+      //   (value) => {
+      //     if(value != null)
+      //     {
+      //     const hj = JSON.parse(value);
+      //       setprinterportasync(hj.name);
+      //     }
+      //   });
+      var getprinterport = await AsyncStorage.getItem('printertype');
       if(getprinterport != null || getprinterport != ''){
         setprinterportasync(getprinterport);
       }else {
@@ -77,41 +86,45 @@ const Home = props => {
         const woolineitem = json[0].line_items;
         const woolastsingleorder = json[0];
         setlastsingleorderdata([woolastsingleorder]);
+        setOrderIDreal(wooorderIDreal);
         // logictoplaysound();//
         setlineitems([woolineitem]);
         setwData(json);
 
-        function formatAMPM(date) {
-          var hours = date.getHours();
-          var minutes = date.getMinutes();
-          var ampm = hours >= 12 ? 'pm' : 'am';
-          hours = hours % 12;
-          hours = hours ? hours : 12; // the hour '0' should be '12'
-          minutes = minutes < 10 ? '0'+minutes : minutes;
-          var strTime = hours + ':' + minutes + ' ' + ampm;
-          return strTime;
-        }
+
         var lastorderdate1 =  woolastsingleorder.date_created;
         // console.log(formatAMPM(lastorderdate1), "sdcmdscndsndsn");
-        
+       
         var lastorderdate =  datupdate(woolastsingleorder.date_created);
         var lastorderdatemi =  datupdateminutes(woolastsingleorder.date_created);
         var lastorderdate1 =  woolastsingleorder.date_created;
+        var currentimezone = moment().utc().local().format('Z');
+        console.log(currentimezone, "currentimezone")
+        var sddate =  moment(lastorderdate1).utcOffset(currentimezone).format('YYYY/MM/DD hh:mm:ss');
+ console.log(sddate, "fvdfvdfvdfvdfvdfvdfvdfvdfvdfvdf")
+//  2021/10/29 07:12:19
+        var abc =  new Date()
+        var currentimezone = moment().utc().local().format('Z');
+       var currenttime = moment().utcOffset(currentimezone).format('YYYY/MM/DD hh:mm:ss');
 
-        var abc =  datupdateminutes(new Date())
 
-
-        const diffInMilliseconds1 = Math.abs(new Date(abc) - new Date(lastorderdatemi));
+        const diffInMilliseconds1 = Math.abs(new Date(currenttime) - new Date(sddate));
         var diff = diffInMilliseconds1/1000;
         setdiffsecond(diff);
-console.log(diff, 'asdcxdasds'); //86400000
+        console.log( ' ')
+console.log( ' ')
+console.log( ' ')
+console.log(diff, 'asdcxDFDDFdasds'); //86400000
+console.log( ' ')
+console.log( ' ')
+console.log( ' ')
 
         
         // console.log(diffInMilliSeconds + " diffInMilliSeconds");
 
-console.log(abc.toLocaleString() + " ABC Time");
-console.log(lastorderdatemi+ " Alastorderdatemi BC Time");
-console.log(lastorderdate+ " Order Time");
+console.log(currenttime + " Current Time");
+console.log(sddate + "Order Time");
+
 
 
         // console.log(abc, 'ABC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -131,12 +144,12 @@ console.log(lastorderdate+ " Order Time");
 // console.log(daysTill30June2035);
         // console.log(daysTill30June2035, '54ABC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     
-      if (lastorderstatus == "processing" && diff < 5000) {
+      if (lastorderstatus == "processing" && diff <= 6) {
 
         setModal(true);
         // modelpopup()
         console.log('Loading Sound');
-        Stopsoundabc();
+        // Stopsoundabc();
         playsoundabc();
         console.log( 'Playing Sound');
         // const setidevalue = AsyncStorage.setItem(
@@ -253,7 +266,7 @@ console.log(lastorderdate+ " Order Time");
     var t = new Date(dataeupdatev);
     var hours = t.getHours();
     var minutes = t.getMinutes();
-    var newformat = t.getHours() >= 12 ? 'PM' : 'AM';  
+ 
     
     // Find current hour in AM-PM Format 
     hours = hours % 12;  
@@ -270,11 +283,12 @@ console.log(lastorderdate+ " Order Time");
   const playsoundabc = async () => {
     console.log("sound Start")
     try {
-      console.log("sound Start 2")
+      // console.log("sound Start 2")
+      SoundPlayer.stop('order', 'mp3');
       SoundPlayer.loadSoundFile('order', 'mp3');
-      console.log("sound Start3")
+      // console.log("sound Start3")
       SoundPlayer.playSoundFile('order', 'mp3');
-      console.log("sound Start4")
+      // console.log("sound Start4")
     } catch (e) {
       alert('Cannot play the file');
       console.log('cannot play the song file', e);
@@ -294,6 +308,9 @@ console.log(lastorderdate+ " Order Time");
   //close the popup
   const closepop = async () => {
     Stopsoundabc();
+    setModal(false);
+  };
+  const closepopmodal = async () => {
     setModal(false);
   };
 
@@ -401,6 +418,7 @@ console.log(lastorderdate+ " Order Time");
 
 
   async function testprint(port) {
+  //console.log(wdata[0], "commands startt.....");
 
     const orderdt = wdata[0];
     const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;
@@ -520,7 +538,7 @@ async function printStarL() {
             <Button
               theme={theme}
               mode="contained"
-              onPress={() =>  { Stopsoundabc(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
+              onPress={() =>  { Stopsoundabc(); closepopmodal(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
               View Order
             </Button>
             <Button
@@ -547,9 +565,10 @@ async function printStarL() {
           props.navigation.navigate('Order Detail', {orderID: item.item.id})
         }>
         <View style={{marginLeft: 10}}>
-          <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text>
+          {/* <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text> */}
+          <Text style={styles.text}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
           <Text style={styles.text}>
-            #{item.item.id} {item.item.billing.first_name}
+            #{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}
           </Text>
           <Text style={styles.text}>status: {item.item.status}</Text>
           <Text style={styles.text}>Total: {item.item.total}</Text>
@@ -565,11 +584,12 @@ async function printStarL() {
           props.navigation.navigate('Order Detail', {orderID: item.item.id})
         }>
         <View style={{marginLeft: 10}}>
-          <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text>
+          {/* <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text> */}
+          <Text style={styles.text}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
           <Text style={styles.text}>
-            #{item.item.id} {item.item.billing.first_name}
+            #{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}
           </Text>
-          <Text style={styles.text}>status: {item.item.status}</Text>
+          <Text style={styles.text}>Status: {item.item.status}</Text>
           <Text style={styles.text}>Total: {item.item.total}</Text>
         </View>
       </TouchableOpacity>
@@ -600,9 +620,9 @@ async function printStarL() {
 
       </TouchableOpacity>
      
-    
+    <Text>{diffsecond}</Text>
          <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
-           <Text>{diffsecond}</Text>
+        
         <Text style={{fontSize: 20}}>Last {wdata.length} Orders</Text>
 
       </View>

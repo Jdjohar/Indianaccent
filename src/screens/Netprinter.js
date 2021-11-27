@@ -16,6 +16,8 @@ import {
   } from "react-native-thermal-receipt-printer";
   import { StarPRNT } from 'react-native-print-star';
 import { NavigationContainer } from '@react-navigation/native';
+import {discover, print} from "react-native-epson-printer";
+
   const Printermaabc = props => {
     const [printers, setPrinters] = useState([INetPrinter]);
   const [currentPrinter, setCurrentPrinter] = useState();
@@ -23,13 +25,33 @@ import { NavigationContainer } from '@react-navigation/native';
   const [ipport, setipport] = useState('1900');
   const [errorname, seterrorname] = useState('');
   const [printersarr, setprintersarr] = useState([]);
+  const [epsonprintersarr, setepsonprintersarr] = useState([]);
 
   useEffect(() => {
     portDiscovery();
-
+    portDiscoveryepson();
   }, []);
 
-  // Coonect to Printer
+
+
+
+  
+   //Fetch All EPSON Printers
+   const portDiscoveryepson = async () => {
+    console.log('Test Print portDiscovery')
+    try {
+         const printerads =   await discover({interface_type: "LAN"});
+      setepsonprintersarr(printerads);
+      console.log(epsonprintersarr,  "Print Succdsfgess");
+      // connect();
+      // print();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+
+  // Conect to Printer
   async function connect(port) {
     console.log(port, "Port")
     // port = "TCP:192.168.1.108";
@@ -43,6 +65,8 @@ import { NavigationContainer } from '@react-navigation/native';
        if (connect == "Printer Connected")
        {
         Alert.alert(connect);
+
+           AsyncStorage.setItem('printertype', 'star'); // trying to save port number in async storage
            AsyncStorage.setItem('printerportncumber', port); // trying to save port number in async storage
        }
       //  var getprinterport = AsyncStorage.getItem('printerportncumber');
@@ -104,6 +128,37 @@ import { NavigationContainer } from '@react-navigation/native';
       );
     });
   };
+  const epsonconnect = (port) => {
+    try {
+      AsyncStorage.setItem('printertype', 'epson');
+      AsyncStorage.setItem('epsonprinter', JSON.stringify(port));
+      Alert.alert("Printer Selected ");
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
+
+  
+  const epsonlist = () => {
+    return epsonprintersarr.map((element) => {
+      return (
+        <View key={element.mac_address} style={{margin: 10}}>
+          <Text>{element.name}</Text>
+          <Text>{element.mac_address}</Text>
+          <Text>{element.target}</Text>
+          <Text>{element.interface_type}</Text>
+      <TouchableOpacity  onPress={() => epsonconnect(element)}>
+        <Text style={{padding:10, backgroundColor:'#222', color:'#fff', width:"40%", textAlign:'center'}}>click to connect</Text>
+      </TouchableOpacity>
+         
+        </View>
+      );
+    });
+  };
+
+
+
 
 
     return (
@@ -119,10 +174,20 @@ import { NavigationContainer } from '@react-navigation/native';
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {list()}
       </View>
+      <View style={{marginBottom:30}}> 
+
+        {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
+      {epsonlist()}
+      </View>
       
       <TouchableOpacity 
       onPress={()=>portDiscovery()}>
-        <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Printers</Text>
+        <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Star Printers</Text>
+
+      </TouchableOpacity>
+      <TouchableOpacity 
+      onPress={()=>portDiscoveryepson()}>
+        <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Epson Printers</Text>
 
       </TouchableOpacity>
      

@@ -17,7 +17,9 @@ import {Card, Button, FAB} from 'react-native-paper';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StarPRNT } from 'react-native-print-star';
+import {discover, print} from "react-native-epson-printer";
 import { ck, cs } from "../screens/utils/keys";
+import moment from 'moment';
 
 // const [selectedPrinter,setselectedPrinter] =useState('');
 // import { Audio } from 'expo-av';
@@ -57,6 +59,7 @@ const OrderList = ({route,navigation}) => {
   console.log(OrderIDfromHome);
 
   useEffect(() => {
+    
     fetchorder();
     return () => {
       // This is its cleanup.
@@ -197,11 +200,30 @@ const OrderList = ({route,navigation}) => {
   };
 
 
+
+
+
   // printer conection
 
   async function connect(port) {
     console.log(port, "Port")
     try {
+    var getprinter = await AsyncStorage.getItem('printertype');
+    if(getprinter == "epson")
+    {
+     
+      await AsyncStorage.getItem("epsonprinter").then(
+        (value) => {
+          if(value != null)
+          {
+          const hj = JSON.parse(value);
+          const prt = {name: hj.name, interface_type: hj.interface_type, mac_address: hj.mac_address, target: hj.target};
+          
+  epsontestprint(prt);
+        
+    }
+  });
+    }else{
       var connect = await StarPRNT.connect(port, "StarGraphic", false);
       console.log(connect, "printer"); // Printer Connected!
        seterrorname(connect);
@@ -212,6 +234,7 @@ const OrderList = ({route,navigation}) => {
        } else {
         await AsyncStorage.removeItem('printerportncumber');
        }
+      }
  
     } catch (e) {
       // var gh = JSON.stringify(e.message);
@@ -220,14 +243,71 @@ const OrderList = ({route,navigation}) => {
       // seterrorname(JSON.stringify(e.message));
     }
   }
+  async function reprint(){
+    var getprinter = await AsyncStorage.getItem('printertype');
+    if(getprinter == "epson")
+    {
+      await AsyncStorage.getItem("epsonprinter").then(
+        (value) => {
+          if(value != null)
+          {
+          const hj = JSON.parse(value);
+          const prt = {name: hj.name, interface_type: hj.interface_type, mac_address: hj.mac_address, target: hj.target};
+          
+  epsontestprint(prt);
+        
+    }
+  });
+  
+    }else{
+  var getprinterport = await AsyncStorage.getItem('printerportncumber');
+  testprint(getprinterport);
+    }
 
+  }
+
+  async function epsontestprint(port) {
+    const orderdt = wdataall;
+    const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;
+    var sddate =  moment(orderdt.date_created).utc().local().format('DD/MM/YYYY hh:mm:ss');
+    const orderdatetime = sddate;
+    const customer_note = orderdt.customer_note;
+  var commands = "";
+commands = commands+"ONLINE ORDER\n" +
+        customername +
+        "\n";
+        commands = commands+orderdatetime + 
+        "\n";
+        commands = commands+customer_note + "\n" +
+        "\n";
+
+
+      {lineitems.map(function (k) {
+        commands = commands+"" + k.quantity  + " x " + k.name + "" + "\n";
+  })}  
+  
+  try {
+    const response =  print({
+      printer: port,
+       data:  commands,
+      receipt_copy_count: 1,
+      font_size: "Regular", // Small, Regular, Medium, Large
+    })
+        // console.log(response, "printer"); // Printer Connected!
+  
+          Alert.alert("Print Success");
+  } catch (e) {
+    console.error(JSON.stringify(e));
+    Alert.alert("Message",JSON.stringify(e.message));
+  }
+  }
   async function testprint(port) {
 
-    // console.log("commands startt.....");
   
       const orderdt = wdataall;
       const customername = orderdt.billing.first_name + " " + orderdt.billing.last_name;
-      const orderdatetime =datupdate(orderdt.date_created) ;
+      var sddate =  moment(orderdt.date_created).utcOffset('-07:00').format('DD/MM/YYYY hh:mm:ss');
+      const orderdatetime = sddate;
       const customer_note = orderdt.customer_note;
     let commands = [];
   commands.push({append:
@@ -271,7 +351,7 @@ var orderstatus = {
       const note = wdataall.customer_note;
       orderstatus = {
         status: orderstatusupdate,
-        customer_note: note + ` Your Order will Prepair within ${ordertime} minutes`, 
+        customer_note: note + `Order Time: ${ordertime} minutes`, 
       };
     }else {
     orderstatus = {
@@ -531,7 +611,7 @@ var orderstatus = {
           <View style={styles.inner}>
             {/* <Text>{productstatus}</Text> */}
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
-            <TouchableOpacity style={{padding:10, backgroundColor:'#03a9f4'}} onPress={() => testprint()}>
+            <TouchableOpacity style={{padding:10, backgroundColor:'#03a9f4'}} onPress={() => reprint()}>
             <Text style={{color:'#fff'}}>Re-Print</Text>
       </TouchableOpacity>
              

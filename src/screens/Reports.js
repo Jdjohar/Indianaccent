@@ -6,6 +6,9 @@ import {
   Alert,
   FlatList,
   Modal,
+  SafeAreaView,
+  ScrollView,
+  ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,13 +23,15 @@ const Reports = props => {
 
   const [totals,settotals] = useState([]);
   const [alldata,setalldata] = useState([]);
-  const [startdate,setstartdate] = useState('')
-  const [enddate,setenddate] = useState('');
+  const [startdate,setstartdate] = useState(moment().format("YYYY-MM-DD"))
+  const [enddate,setenddate] = useState(moment().format("YYYY-MM-DD"));
+  const [isSubmit, setIsSubmit] = useState(true);
 
   // const [date, setDate] = useState(new Date())
 
 
   useEffect(() => {
+    setIsSubmit(false);
     var currenttime = moment().utc().local().format('Z');
     var jsd = moment.utc("2016-08-11 12:19:14").local().format("YYYY-MM-DD HH:mm:ss Z")
     console.log(currenttime,jsd, "currenttime")
@@ -37,10 +42,44 @@ const timezone = dateAsString.match(/\(([^\)]+)\)$/)[1];
 
 console.log(timezone, "sdcsdsdsd");
 
-    reports()
-
   }, []);
 
+  async function testprint(port) {
+
+  let commands = [];
+  if(alldata.length > 0){
+        
+        commands.push({append:"Report\n" + 
+"Total Sale:" + alldata[0].total_sales +
+"\n"+
+"Total Order:" +  alldata[0].total_orders +
+"\n"+
+"Total Item:" +  alldata[0].total_items +
+"\n\n\n\n", fontSize: 40})
+
+
+   totals.map((element) => {
+    commands.push({append:"Date: " + Object.keys(element) + "\n", fontSize: 40})
+    commands.push({append:"Sales: " + element[Object.keys(element)].sales + "\n", fontSize: 25})
+    commands.push({append:"Orders: " + element[Object.keys(element)].orders + "\n", fontSize: 25})
+    commands.push({append:"Items: " + element[Object.keys(element)].items + "\n", fontSize: 25})
+    commands.push({append:"Tax: " + element[Object.keys(element)].tax + "\n\n", fontSize: 25})
+
+
+   });
+  commands.push({appendCutPaper:StarPRNT.CutPaperAction.PartialCutWithFeed});
+        console.log(commands, "Printing Command Press +++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+  
+  try {
+    var printResult = await StarPRNT.print("StarGraphic", commands, port);
+    console.log(printResult, "p326r2+62+62+3030+6+62+96+6"); // Success!
+    Alert.alert( "Print",JSON.stringify(printResult));
+  } catch (e) {
+    console.error(JSON.stringify(e));
+    Alert.alert("Message",JSON.stringify(e.message));
+  }
+  }
+}
   async function epsontestprint(port) {
 
 
@@ -87,6 +126,7 @@ commands = commands+"Report\n" +
   
 
   const reports = async () => {
+    setIsSubmit(true);
 console.log("Reports Section Start")
 let items = await fetch(
   // `https://indianaccentyyc.ca/shop/wp-json/wc/v3/reports?consumer_key=${ck}&consumer_secret=${cs}`,
@@ -99,6 +139,8 @@ if (json.length > 0) {
   setalldata(json);
   const result = Object.keys(totalss).map(key => ({[key]: totalss[key]}));
   settotals(result);
+  setIsSubmit(false);
+ 
 }
   }
 
@@ -111,6 +153,7 @@ if (json.length > 0) {
           <Text>Date: {Object.keys(element)}</Text>
           <Text>Total Sale: ${element[Object.keys(element)].sales}</Text>
           <Text>Total Order: {element[Object.keys(element)].orders}</Text>
+          <Text>Total Tip: {element[Object.keys(element)].tip}</Text>
           <Text>Total Items: {element[Object.keys(element)].items}</Text>
       
          
@@ -120,45 +163,97 @@ if (json.length > 0) {
 }else{
   return <Text></Text>;
 }
-};
 
+};
+async function  printreport(){
+  
+  var getprinter = await AsyncStorage.getItem('printertype');
+  if(getprinter == "epson")
+  {
+    await AsyncStorage.getItem("epsonprinter").then(
+      (value) => {
+        if(value != null)
+        {
+        const hj = JSON.parse(value);
+        const prt = {name: hj.name, interface_type: hj.interface_type, mac_address: hj.mac_address, target: hj.target};
+        
+epsontestprint(prt);
+      
+  }
+});
+
+  }else{
+var getprinterport = await AsyncStorage.getItem('printerportncumber');
+testprint(getprinterport);
+  }
+}
 
     return (
+      isSubmit ?
+      <View style={styles.container}>
+      <ActivityIndicator size="large" color="#602bc2" />
+   </View>
+   :
         <View style={styles.container}>
 
         <TextInput
-            label='Start Date - YYYY/MM/DD'
+            label='Start Date - YYYY-MM-DD'
             mode="outlined"
             keyboardType="numeric"
             value={startdate}
             onChangeText={(text) =>setstartdate(text) }
         />
         <TextInput
-            label='End Date - YYYY/MM/DD'
+            label='End Date - YYYY-MM-DD'
             mode="outlined"
             keyboardType="numeric"
             value={enddate}
             onChangeText={(text) =>setenddate(text) }
         />
-        <Button
-        style={{marginTop:20}}
+
+        <View style={{
+          flexDirection: 'row',
+        
+        height:'auto'
+        
+         }}>
+          <View style={{width:'40%', margin:10}}>
+          <Button
+        style={{marginTop:20, color:'#222',  backgroundColor:'#03A9F4',borderRadius:30 }}
          mode="contained" 
          onPress={() => reports()}
         >
           See Report
         </Button>
 
-    
+          </View>
+          <View style={{width:'40%', margin:10}}>
+          <Button
+        style={{marginTop:20, backgroundColor:'#1B242E', borderRadius:30, }}
+         mode="contained" 
+         onPress={() => printreport()}
+        >
+          Print
+        </Button>
+          </View>
+        </View>
+      
+      <SafeAreaView style={{paddingBottom:200}}>
 
-
-        
-
-            <Text style={{fontSize:25, paddingBottom:5, paddingTop:20}} >Reports</Text>
+        <ScrollView>
+        <Text style={{fontSize:25, paddingBottom:5, paddingTop:20}} >Reports</Text>
             <Text style={{fontSize:15, paddingBottom:20, paddingTop:5}}> {startdate} to {enddate}</Text>
             <Text>Total Sales: ${alldata.length > 0 ? alldata[0].total_sales : 0}</Text>
             <Text>Total Orders: {alldata.length > 0 ? alldata[0].total_orders : 0}</Text>
+            <Text>Total Tip: {alldata.length > 0 ? alldata[0].total_tip : 0}</Text>
             <Text>Total Item: {alldata.length > 0 ? alldata[0].total_items : 0}</Text>
             {list()}
+        </ScrollView>
+      </SafeAreaView>
+
+        
+
+           
         </View>
         )
 }
@@ -171,6 +266,26 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#eee',
+  },
+  container_home2: {
+    padding: 5,
+    width: '100%',
+    height:'auto',
+    backgroundColor: '#eee',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  box2: {
+    padding: 5,
+    width: '50%',
+    height: 50,
+    
+  },
+  inner: {
+    flex: 1,
+    width: '100%',
+    padding: 2,
+   
   },
 });
 export default Reports;

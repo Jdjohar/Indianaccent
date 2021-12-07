@@ -658,7 +658,7 @@ var orderstatus = {
 
           <View style={styles.modalButton}>
             <Button
-       
+              style={{backgroundColor:'#03A9F4', padding:10, borderRadius:30}}
               mode="contained"
               onPress={() => 
               
@@ -669,6 +669,7 @@ var orderstatus = {
             </Button>
             <Button
               mode="contained"
+              style={{backgroundColor:'#E10606', padding:10, borderRadius:30}}
               onPress={() => OrderUpdate('cancelled')}>
               Reject
             </Button>

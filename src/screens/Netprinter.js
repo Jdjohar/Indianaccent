@@ -102,7 +102,7 @@ import {discover, print} from "react-native-epson-printer";
   const portDiscovery = async () => {
     console.log('Test Print portDiscovery')
     try {
-      const printerads = await StarPRNT.portDiscovery('All');
+      const printerads =  await StarPRNT.portDiscovery('All');
       setprintersarr(printerads);
       console.log(printersarr,  "Print Succdsfgess");
       // connect();
@@ -115,14 +115,15 @@ import {discover, print} from "react-native-epson-printer";
   const list = () => {
     return printersarr.map((element) => {
       return (
-        <View key={element.portName} style={{margin: 10}}>
-          <Text>{element.modelName}</Text>
-          <Text>{element.macAddress}</Text>
-          <Text>{element.portName}</Text>
-          <Text>{element.USBSerialNumber}</Text>
-      <TouchableOpacity  onPress={() => connect(`${element.portName}`)}>
+        <View key={element.portName} style={{margin: 5, backgroundColor:'#fff', padding:10,}}>
+
+<TouchableOpacity  onPress={() => connect(`${element.portName}`)}>
+          <Text style={{fontSize:20}}>{element.modelName}</Text>
+          <Text>{element.macAddress} | {element.portName} | {element.USBSerialNumber}</Text>
+          </TouchableOpacity>
+      {/* <TouchableOpacity  onPress={() => connect(`${element.portName}`)}>
         <Text style={{padding:10, backgroundColor:'#222', color:'#fff', width:"40%", textAlign:'center'}}>click to connect</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
          
         </View>
       );
@@ -144,13 +145,21 @@ import {discover, print} from "react-native-epson-printer";
     return epsonprintersarr.map((element) => {
       return (
         <View key={element.mac_address} style={{margin: 10}}>
-          <Text>{element.name}</Text>
-          <Text>{element.mac_address}</Text>
-          <Text>{element.target}</Text>
-          <Text>{element.interface_type}</Text>
+
+
+        
       <TouchableOpacity  onPress={() => epsonconnect(element)}>
-        <Text style={{padding:10, backgroundColor:'#222', color:'#fff', width:"40%", textAlign:'center'}}>click to connect</Text>
+      <Text style={{fontSize:20,}}>{element.name}</Text>
+          <Text>{element.mac_address} | {element.target} | {element.interface_type}</Text>
+
+
       </TouchableOpacity>
+
+
+
+      {/* <TouchableOpacity  onPress={() => epsonconnect(element)}>
+        <Text style={{padding:10, backgroundColor:'#222', color:'#fff', width:"40%", textAlign:'center'}}>click to connect</Text>
+      </TouchableOpacity> */}
          
         </View>
       );
@@ -164,39 +173,70 @@ import {discover, print} from "react-native-epson-printer";
     return (
         <View style={styles.container}>
 
-<View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
+<View style={{paddingLeft: 10}}>
        
         <Text style={{fontSize: 20}}>{errorname}</Text>
       </View>
 
-      <View style={{marginBottom:30}}> 
+      <View> 
 
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {list()}
       </View>
+
+      <View>
+        <Text>Select Printer Type</Text>
+      </View>
+
+      <View style={styles.container_home2}>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+
+          <TouchableOpacity 
+      onPress={()=>portDiscovery()}>
+       <Text style={{fontSize:14,textAlign:'center', backgroundColor:'#03a9f4', padding:10, borderRadius:30, fontWeight:'700'}}>Star Printers</Text>
+      </TouchableOpacity>
+
+
+            
+          </View>
+        </View>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+
+          <TouchableOpacity 
+      onPress={()=>portDiscoveryepson()}>
+         <Text style={{textAlign:'center', fontSize:14,color:'#fff', backgroundColor:'#1B242E', padding:10, borderRadius:30, fontWeight:'700', paddingRight:20}}>Epson Printers</Text>
+
+      </TouchableOpacity>
+         
+          </View>
+        </View>
+      </View>
+
+
+
+
       <View style={{marginBottom:30}}> 
 
         {/* {k.macAddress} {k.portName} {k.USBSerialNumber} */}
       {epsonlist()}
       </View>
       
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
       onPress={()=>portDiscovery()}>
         <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Star Printers</Text>
 
       </TouchableOpacity>
+
+
       <TouchableOpacity 
       onPress={()=>portDiscoveryepson()}>
         <Text style={{backgroundColor:"#03a9f4", color:"#fff",  padding:10}}>Fetch Epson Printers</Text>
 
       </TouchableOpacity>
-     
-      <TouchableOpacity 
-      onPress={()=>props.navigation.navigate("Home")}>
-        <Text style={{backgroundColor:"#222", padding:10, color:"#fff"}}>Go To Home</Text>
-
-      </TouchableOpacity>
-            
+      */}
+      
        
         
        
@@ -211,7 +251,23 @@ const styles = StyleSheet.create({
       width: '100%',
       height: '100%',
       backgroundColor: '#eee',
-    }
+    },
+    container_home2: {
+      paddingTop:10,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      
+      
+    },
+    box2: {
+     height: 50,
+      width: '50%',
+    },
+    inner: {
+      flex: 1,
+      width: '100%',
+     
+    },
     });  
 
 export default Printermaabc;

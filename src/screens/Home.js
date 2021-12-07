@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  Image,
   Modal,
   TouchableOpacity,
 } from 'react-native';
@@ -534,15 +535,25 @@ async function printStarL() {
           setModal(false);
         }}>
         <View style={styles.modelView}>
+          <View style={{paddingTop:20,paddingBottom:20,  justifyContent: 'center', alignItems: 'center',}}>
+          <Image
+        style={styles.tinyLogo}
+        source={require('../../assets/alarm.png')}
+      />
+          </View>
+       
+          <Text style={{textAlign:'center', fontSize:20, paddingBottom:20}}>Hurrah! New Order</Text>
           <View style={styles.modalButton}>
             <Button
               theme={theme}
               mode="contained"
+              style={{borderRadius:30,backgroundColor:'#03A9F4', padding:10}}
               onPress={() =>  { Stopsoundabc(); closepopmodal(); props.navigation.navigate("Order Detail", { orderID: orderIDreal})}}>
               View Order
             </Button>
             <Button
               mode="contained"
+              style={{borderRadius:30, padding:10, backgroundColor:'#E10606'}}
               onPress={() => closepop()}>
               Reject
             </Button>
@@ -558,7 +569,7 @@ async function printStarL() {
 
       item.item.status == "processing" 
       ?  
-      <Card style={styles.mycard2}> 
+      <Card style={styles.mycard2}>
       <View style={styles.cradView}>
       <TouchableOpacity
         onPress={() =>
@@ -566,12 +577,69 @@ async function printStarL() {
         }>
         <View style={{marginLeft: 10}}>
           {/* <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text> */}
-          <Text style={styles.text}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
-          <Text style={styles.text}>
-            #{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}
-          </Text>
-          <Text style={styles.text}>status: {item.item.status}</Text>
-          <Text style={styles.text}>Total: {item.item.total}</Text>
+          <Text style={styles.text1card2}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
+         
+
+          <View style={styles.container_home2}>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{fontSize:14, color:'#fff'}}>#{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}</Text>
+          </View>
+        </View>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{textAlign:'right',color:'#fff', fontSize:18, fontWeight:'700', paddingRight:20}}>$ {item.item.total}</Text>
+          </View>
+        </View>
+      </View>
+  
+
+
+            {/* <TouchableOpacity
+              onPress={() => onclick(10)}>
+             
+            </TouchableOpacity> */}
+          <Text style={styles.textbox}>{item.item.status}</Text>
+          {/* <Text style={styles.text}>Total: {item.item.total}</Text> */}
+        </View>
+      </TouchableOpacity>
+    </View>
+  </Card>
+      : 
+      item.item.status == "cancelled" 
+      ?  
+      <Card style={styles.mycard3}>
+      <View style={styles.cradView}>
+      <TouchableOpacity
+        onPress={() =>
+          props.navigation.navigate('Order Detail', {orderID: item.item.id})
+        }>
+        <View style={{marginLeft: 10}}>
+          {/* <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text> */}
+          <Text style={styles.text1card3}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
+         
+
+          <View style={styles.container_home2}>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{fontSize:14, color:'#fff'}}>#{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}</Text>
+          </View>
+        </View>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{textAlign:'right',color:'#fff', fontSize:18, fontWeight:'700', paddingRight:20}}>$ {item.item.total}</Text>
+          </View>
+        </View>
+      </View>
+  
+
+
+            {/* <TouchableOpacity
+              onPress={() => onclick(10)}>
+             
+            </TouchableOpacity> */}
+          <Text style={styles.textbox}>{item.item.status}</Text>
+          {/* <Text style={styles.text}>Total: {item.item.total}</Text> */}
         </View>
       </TouchableOpacity>
     </View>
@@ -585,12 +653,30 @@ async function printStarL() {
         }>
         <View style={{marginLeft: 10}}>
           {/* <Text style={styles.text}>{datupdate(item.item.date_created_gmt)}</Text> */}
-          <Text style={styles.text}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
-          <Text style={styles.text}>
-            #{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}
-          </Text>
-          <Text style={styles.text}>Status: {item.item.status}</Text>
-          <Text style={styles.text}>Total: {item.item.total}</Text>
+          <Text style={styles.text1}>{moment(item.item.date_created).utc().local().format('LLLL')}</Text>
+         
+
+          <View style={styles.container_home2}>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{fontSize:14}}>#{item.item.id} {item.item.billing.first_name} {item.item.billing.last_name}</Text>
+          </View>
+        </View>
+        <View style={styles.box2}>
+          <View style={styles.inner}>
+            <Text style={{textAlign:'right', fontSize:18, fontWeight:'700', paddingRight:20}}>$ {item.item.total}</Text>
+          </View>
+        </View>
+      </View>
+  
+
+
+            {/* <TouchableOpacity
+              onPress={() => onclick(10)}>
+             
+            </TouchableOpacity> */}
+          <Text style={styles.textbox}>{item.item.status}</Text>
+          {/* <Text style={styles.text}>Total: {item.item.total}</Text> */}
         </View>
       </TouchableOpacity>
     </View>
@@ -614,13 +700,18 @@ async function printStarL() {
         <Text>Print</Text>
       </TouchableOpacity> */}
 
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
       onPress={()=>props.navigation.navigate("Printerabc")}>
         <Text style={{padding:10}}>Printer: {printerportasync}</Text>
 
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      {/* <TouchableOpacity 
+      onPress={()=>props.navigation.navigate("Reports")}>
+        <Text style={{padding:10}}>Go to Reports</Text>
+
+      </TouchableOpacity> */}
      
-    <Text>{diffsecond}</Text>
+    {/* <Text>{diffsecond}</Text> */}
          <View style={{paddingLeft: 10, paddingBottom: 10, paddingTop: 10}}>
         
         <Text style={{fontSize: 20}}>Last {wdata.length} Orders</Text>
@@ -692,13 +783,27 @@ const styles = StyleSheet.create({
   },
   mycard: {
     margin: 5,
-    padding: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    paddingBottom: 15,
+    paddingTop: 15,
     backgroundColor: '#90EE90'
   },
   mycard2: {
     margin: 5,
-    padding: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    paddingBottom: 15,
+    paddingTop: 15,
     backgroundColor: '#03a9f4'
+  },
+  mycard3: {
+    margin: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    paddingBottom: 15,
+    paddingTop: 15,
+    backgroundColor: '#E10606'
   },
   cradView: {
     flexDirection: 'row',
@@ -706,6 +811,31 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
+  },
+  textbox: {
+    fontSize: 14,
+    backgroundColor: '#1B242E',
+    textTransform:'uppercase',
+    marginTop:10,
+    paddingTop:10,
+    paddingBottom:10,
+    paddingRight:15,
+    paddingLeft:15,
+    color: "#fff",
+    width: '40%',
+    borderRadius:30,
+    textAlign:'center'
+  },
+  text1: {
+    fontSize: 12,
+  },
+  text1card3: {
+    fontSize: 12,
+    color: '#fff'
+  },
+  text1card2: {
+    fontSize: 12,
+    color: '#fff'
   },
   cradView: {
     flexDirection: 'row',
@@ -728,6 +858,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 10,
+  },
+  container_home2: {
+    paddingTop:10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  box2: {
+   
+    width: '50%',
+  },
+  inner: {
+    flex: 1,
+    width: '100%',
+   
+  },
+  tinyLogo: {
+    width: 100,
+    height: 100,
   },
 });
 export default Home;
